@@ -1,0 +1,13 @@
+#spring.datasource.url: jdbc:mysql://localhost:3306/diarybook?serverTimezone=UTC&useSSL=false
+#spring.datasource.username: root
+#spring.datasource.password: password
+#spring.jpa.database-platform: org.hibernate.dialect.MySQL5Dialect
+#spring.jpa.show-sql: false
+#spring.jpa.hibernate.ddl-auto: none
+
+blog.info.title: DevPub
+blog.info.subtitle: Рассказы разработчиков
+blog.info.copyright: Дмитрий Сергеев
+blog.info.copyrightFrom: 2005
+blog.info.contact.phone: +7 903 666-44-55
+blog.info.contact.email: mail@mail.ru
