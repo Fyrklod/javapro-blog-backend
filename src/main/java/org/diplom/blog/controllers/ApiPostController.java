@@ -1,9 +1,11 @@
 package org.diplom.blog.controllers;
 
-import org.diplom.blog.dto.model.Post;
+import org.diplom.blog.dto.model.PostDto;
 import org.diplom.blog.dto.request.PostRequest;
 import org.diplom.blog.dto.response.PostsResponse;
 import org.diplom.blog.dto.response.UploadResponse;
+import org.diplom.blog.model.Mode;
+import org.diplom.blog.model.ModerationStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +16,11 @@ import java.util.Date;
 @RequestMapping("/api/post")
 public class ApiPostController {
 
+    //Security
     @GetMapping("")
     public ResponseEntity<PostsResponse> getPosts(@RequestParam(defaultValue = "0") int offset,
                                                   @RequestParam(defaultValue = "50") int limit,
-                                                  @RequestParam(defaultValue = "recent") String mode) {
+                                                  @RequestParam(defaultValue = "recent") Mode mode) {
         PostsResponse response = new PostsResponse();
         response.setCount(0);
 
@@ -32,16 +35,16 @@ public class ApiPostController {
     }
 
     @GetMapping("/{id}")
-    public @ResponseBody Post getPostById(@PathVariable int id) {
-        Post post = new Post();
+    public @ResponseBody PostDto getPostById(@PathVariable int id) {
+        PostDto post = new PostDto();
 
         return post;
     }
 
     @PutMapping("/{id}")
-    public @ResponseBody Post editPost(@PathVariable int id,
+    public @ResponseBody PostDto editPost(@PathVariable int id,
                                        @RequestBody PostRequest request) {
-        Post post = new Post();
+        PostDto post = new PostDto();
 
         return post;
     }
@@ -82,7 +85,7 @@ public class ApiPostController {
     @GetMapping("/moderation")
     public ResponseEntity<PostsResponse> getPostForModeration(@RequestParam(defaultValue = "0") int offset,
                                                @RequestParam(defaultValue = "50") int limit,
-                                               @RequestParam String status) {
+                                               @RequestParam ModerationStatus status) {
 
         PostsResponse response = new PostsResponse();
         response.setCount(0);
@@ -93,7 +96,7 @@ public class ApiPostController {
     @GetMapping("/my")
     public ResponseEntity<PostsResponse> getMyPost(@RequestParam(defaultValue = "0") int offset,
                                     @RequestParam(defaultValue = "50") int limit,
-                                    @RequestParam String status) {
+                                    @RequestParam ModerationStatus status) {
 
         PostsResponse response = new PostsResponse();
         response.setCount(0);

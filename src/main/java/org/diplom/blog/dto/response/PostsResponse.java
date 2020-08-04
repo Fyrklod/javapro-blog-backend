@@ -1,6 +1,6 @@
 package org.diplom.blog.dto.response;
 
-import org.diplom.blog.dto.model.Post;
+import org.diplom.blog.dto.model.PostDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 public class PostsResponse {
     private Integer count;
-    private List<Post> posts;
+    private List<PostDto> posts;
 
     public PostsResponse(){
         posts = new ArrayList<>();

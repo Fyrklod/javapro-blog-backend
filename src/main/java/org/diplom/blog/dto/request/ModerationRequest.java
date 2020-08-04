@@ -14,6 +14,5 @@ import org.diplom.blog.dto.model.Decision;
 public class ModerationRequest {
     @JsonProperty("post_id")
     private Integer postId;
-    //TODO: перевести в ENUM
     private Decision decision;
 }

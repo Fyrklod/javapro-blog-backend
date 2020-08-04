@@ -4,17 +4,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Date;
+import lombok.experimental.Accessors;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Comment {
-    private Integer id;
-    //TODO: формат для  "Вчера, 17:32"
-    private Date time;
+public class CommentDto {
+    private Long id;
+    private long timestamp;
     private String text;
-    private User user;
+    private UserDto user;
 }

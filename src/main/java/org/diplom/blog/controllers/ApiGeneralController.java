@@ -1,7 +1,7 @@
 package org.diplom.blog.controllers;
 
 import org.diplom.blog.dto.model.Error;
-import org.diplom.blog.dto.model.User;
+import org.diplom.blog.dto.model.UserDto;
 import org.diplom.blog.dto.request.*;
 import org.diplom.blog.dto.response.*;
 import org.json.simple.JSONObject;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.Map;
 
 @RestController
 public class ApiGeneralController {
@@ -84,7 +83,7 @@ public class ApiGeneralController {
 
     @PostMapping("/api/profile/my")
     public ResponseEntity<AuthResponse> profile(@RequestHeader("Content-Type") String contentType,
-                                                @RequestBody User profile) {
+                                                @RequestBody UserDto profile) {
         AuthResponse response = new AuthResponse();
         response.setResult(true);
         return ResponseEntity.status(HttpStatus.OK).body(response);

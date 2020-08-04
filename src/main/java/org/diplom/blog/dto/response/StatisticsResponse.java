@@ -16,6 +16,5 @@ public class StatisticsResponse {
     private Integer likesCount;
     private Integer dislikesCount;
     private Integer viewsCount;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private Date firstPublication;
+    private long firstPublication;
 }

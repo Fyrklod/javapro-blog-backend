@@ -4,25 +4,25 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.diplom.blog.dto.response.UserResponse;
+import lombok.experimental.Accessors;
 
-import java.util.Date;
 import java.util.List;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Post {
-    private Integer id;
-    private Date time;
-    private User user;
+public class PostDto {
+    private Long id;
+    private long timestamp;
+    private UserDto user;
     private String title;
     private String announce;
     private Integer likeCount;
     private Integer dislikeCount;
     private Integer commentCount;
     private Integer viewCount;
-    private List<Comment> comments;
+    private List<CommentDto> comments;
     private List<String> tags;
 }
