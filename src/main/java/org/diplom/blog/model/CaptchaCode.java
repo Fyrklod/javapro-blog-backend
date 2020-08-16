@@ -3,6 +3,7 @@ package org.diplom.blog.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.sql.DatabaseMetaData;
@@ -18,7 +19,9 @@ public class CaptchaCode {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "time", nullable = false)
+    @CreationTimestamp
+    @Column(name = "time", nullable = false,
+            columnDefinition = "timestamp with time zone")
     private Date time;
 
     @Column(name = "code", nullable = false)

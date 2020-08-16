@@ -1,6 +1,6 @@
 package org.diplom.blog.dto.response;
 
-import org.diplom.blog.dto.model.PostDto;
+import org.diplom.blog.dto.PostDto;
 import lombok.Getter;
 import lombok.Setter;
 

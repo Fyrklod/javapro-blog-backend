@@ -1,10 +1,9 @@
 package org.diplom.blog.dto.mapper;
 
-import org.diplom.blog.dto.model.PostDto;
+import org.diplom.blog.dto.PostDto;
 import org.diplom.blog.model.Post;
 import org.diplom.blog.model.Tag;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class PostMapper {
@@ -19,10 +18,10 @@ public class PostMapper {
         return new PostDto()
                 .setId(post.getId())
                 .setTimestamp(post.getDate().getTime())
+                .setIsActive(post.isActive())
                 .setUser(UserMapper.toUserDto(post.getAuthor()))
                 .setTitle(post.getTitle())
-                //TODO:откуда?
-                .setAnnounce("")
+                .setText(post.getText())
                 .setLikeCount(countOfLikes)
                 .setDislikeCount(countOfDislikes)
                 .setCommentCount(post.getPostComments().size())

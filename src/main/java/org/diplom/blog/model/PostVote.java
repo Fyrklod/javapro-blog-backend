@@ -3,7 +3,9 @@ package org.diplom.blog.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -18,18 +20,23 @@ public class PostVote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="user_id")
-    private User user;
+    @Column(name="user_id")
+    private Long userId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="post_id")
-    private Post post;
+    @Column(name="post_id")
+    private Long postId;
 
-    @Column(name = "time", nullable = false)
+    @UpdateTimestamp
+    @Column(name = "time", nullable = false,
+            columnDefinition = "timestamp with time zone")
     private Date time;
 
     @Column(name = "value", nullable = false)
-    @Type(type = "org.hibernate.type.NumericBooleanType")
-    private short value;
+    private Integer value;
+
+    public PostVote (Long postId, Long userId, Integer value) {
+        this.postId = postId;
+        this.userId = userId;
+        this.value = value;
+    }
 }

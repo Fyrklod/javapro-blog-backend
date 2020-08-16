@@ -3,11 +3,12 @@ package org.diplom.blog.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -22,19 +23,24 @@ public class Post {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    @Enumerated(EnumType.STRING)
+    @Basic
     @Column(name = "moderation_status", nullable = false)
+    private String moderationStatusValue;
+
+    @Transient
     private ModerationStatus moderationStatus;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="moderator_id")
     private User moderator;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User author;
 
-    @Column(name = "time", nullable = false)
+    @CreationTimestamp
+    @Column(name = "time", nullable = false,
+            columnDefinition = "timestamp with time zone")
     private Date date;
 
     @Column(name = "title", nullable = false)
@@ -46,7 +52,7 @@ public class Post {
     @Column(name = "view_count", nullable = false)
     private Integer viewCount;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "postId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostVote> votes;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -57,4 +63,18 @@ public class Post {
                joinColumns = {@JoinColumn(name = "post_id")},
                inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tags;
+
+    @PostLoad
+    private void fillTransient(){
+        if(!StringUtils.isEmpty(moderationStatusValue)){
+            this.moderationStatus = ModerationStatus.fromString(moderationStatusValue);
+        }
+    }
+
+    @PrePersist
+    private void fillPersistent(){
+        if(moderationStatus!=null){
+            this.moderationStatusValue = moderationStatus.toString();
+        }
+    }
 }

@@ -2,17 +2,18 @@ package org.diplom.blog.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.diplom.blog.dto.Decision;
 
-@Getter
-@Setter
-@NoArgsConstructor
+/**
+ * @author Andrey.Kazakov
+ * @date 12.08.2020
+ */
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ModerationRequest {
+public class VoteRequest {
     @JsonProperty("post_id")
-    private Integer postId;
-    private Decision decision;
+    private Long postId;
 }

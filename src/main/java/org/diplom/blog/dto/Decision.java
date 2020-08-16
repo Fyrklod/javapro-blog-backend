@@ -1,4 +1,4 @@
-package org.diplom.blog.dto.model;
+package org.diplom.blog.dto;
 
 public enum Decision {
     DECLINE("decline"),
@@ -6,7 +6,7 @@ public enum Decision {
 
     private String decision;
 
-    Decision(String decision){
+    private Decision(String decision){
         this.decision = decision;
     }
 }

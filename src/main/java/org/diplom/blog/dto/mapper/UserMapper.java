@@ -1,6 +1,6 @@
 package org.diplom.blog.dto.mapper;
 
-import org.diplom.blog.dto.model.UserDto;
+import org.diplom.blog.dto.UserDto;
 import org.diplom.blog.model.User;
 
 public class UserMapper {

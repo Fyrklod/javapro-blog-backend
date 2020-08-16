@@ -1,4 +1,4 @@
-package org.diplom.blog.dto.model;
+package org.diplom.blog.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
@@ -15,10 +15,12 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostDto {
     private Long id;
-    private long timestamp;
+    private Long timestamp;
+    private Boolean isActive;
     private UserDto user;
     private String title;
     private String announce;
+    private String text;
     private Integer likeCount;
     private Integer dislikeCount;
     private Integer commentCount;

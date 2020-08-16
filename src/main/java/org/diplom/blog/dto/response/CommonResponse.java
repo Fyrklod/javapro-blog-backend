@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.diplom.blog.dto.Error;
 
+/**
+ * @author Andrey.Kazakov
+ * @date 12.08.2020
+ */
 @Getter
 @Setter
-@NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class UploadResponse {
+public class CommonResponse {
     private boolean result;
-    private Error errors;
 }

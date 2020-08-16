@@ -1,0 +1,13 @@
+INSERT INTO posts (is_active, moderation_status, moderator_id, user_id, "time", title, text, view_count)
+ VALUES (true, 'declined', 1, 2, '2020-06-01 02:30:24', 'Flowers','Any text', 1)
+        ,(true, 'accepted', 1, 2, '2019-06-01 05:30:24', 'Command Message', 'How can messaging be used to invoke a procedure in another application? ', 100)
+        ,(true, 'accepted', 1, 2, '2020-06-01 05:30:24', 'Message Expiration', 'How can a sender indicate when a message should be considered stale and thus shouldnt be processed? ', 1000)
+        ,(true, 'accepted', 1, 2, '2020-08-01 05:30:24', 'Message', 'How can two applications connected by a message channel exchange a piece of information? ', 0)
+        ,(true, 'accepted', 1, 2, '2020-08-12 23:30:00', 'Splitter', 'How can we process a message if it contains multiple elements, each of which may have to be processed in a different way?', 0)
+        ,(true, 'accepted', 1, 2, '2020-08-13 12:00:00', 'Message Translator','How can systems using different data formats communicate with each other using messaging?', 600)
+        ,(true, 'accepted', 1, 2, '2020-08-13 22:30:00', 'Envelope Wrapper','How can existing systems participate in a messaging exchange that places specific requirements on the message format, such as message header fields or encryption?', 65)
+        ,(true, 'accepted', 1, 2, '2020-08-10 10:31:10', 'Point-to-Point Channel', 'How can the caller be sure that exactly one receiver will receive the document or perform the call?', 99)
+        ,(true, 'accepted', 1, 2, '2020-08-11 10:00:00', 'Polling Consumer', 'How can an application consume a message when the application is ready?', 25)
+        ,(true, 'accepted', 1, 2, '2020-08-11 23:00:00', 'Dynamic Router', 'How can you avoid the dependency of the router on all possible destinations while maintaining its efficiency? ',99)
+        ,(true, 'accepted', 1, 2, '2020-08-12 10:00:00', 'Wire Tap','How do you inspect messages that travel on a point-to-point channel?', 65)
+        ,(true, 'accepted', 1, 2, '2020-08-13 22:00:00', 'Content Enricher','How do we communicate with another system if the message originator does not have all the required data items available? ', 5);

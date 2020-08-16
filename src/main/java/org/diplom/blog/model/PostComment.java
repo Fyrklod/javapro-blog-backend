@@ -3,6 +3,7 @@ package org.diplom.blog.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -25,11 +26,13 @@ public class PostComment {
     @JoinColumn(name="post_id")
     private Post post;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User author;
 
-    @Column(name = "time", nullable = false)
+    @CreationTimestamp
+    @Column(name = "time", nullable = false,
+            columnDefinition = "timestamp with time zone")
     private Date time;
 
     @Column(name = "text", nullable = false, columnDefinition="TEXT")

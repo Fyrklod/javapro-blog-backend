@@ -1,4 +1,4 @@
-package org.diplom.blog.dto.model;
+package org.diplom.blog.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
@@ -10,7 +10,10 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true)
 @NoArgsConstructor
-public class TagDto {
-    private String name;
-    private Integer weight;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CommentDto {
+    private Long id;
+    private long timestamp;
+    private String text;
+    private UserDto user;
 }

@@ -1,4 +1,4 @@
-package org.diplom.blog.dto.model;
+package org.diplom.blog.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

@@ -3,6 +3,7 @@ package org.diplom.blog.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -22,7 +23,9 @@ public class User {
     @Column(name = "is_moderator", nullable = false)
     private boolean isModerator;
 
-    @Column(name = "reg_time", nullable = false)
+    @CreationTimestamp
+    @Column(name = "reg_time", nullable = false,
+            columnDefinition = "timestamp with time zone")
     private Date regTime;
 
     @Column(name = "name", nullable = false)

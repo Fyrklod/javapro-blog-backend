@@ -1,8 +1,7 @@
 package org.diplom.blog.dto.mapper;
 
 
-import org.diplom.blog.dto.model.CommentDto;
-import org.diplom.blog.dto.model.UserDto;
+import org.diplom.blog.dto.CommentDto;
 import org.diplom.blog.model.PostComment;
 
 
