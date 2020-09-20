@@ -12,14 +12,12 @@ import java.util.*;
  * @date 16.08.2020
  */
 @Getter
-@Setter
 public class CalendarResponse {
-    private Set<Integer> years;
-    private List<Map<String, Integer>> posts;
+    private final Set<Integer> years;
+    private final Map<String, Long> posts;
 
-    public CalendarResponse(Integer year){
-        posts = new ArrayList<>();
-        years = new HashSet<>();
-        years.add(year);
+    public CalendarResponse(Set<Integer> years, Map<String, Long> posts){
+        this.years = years;
+        this.posts = posts;
     }
 }

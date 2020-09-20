@@ -11,5 +11,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class EntityCount<T> {
     T entity;
-    long countRecord;
+    Long countRecord;
 }

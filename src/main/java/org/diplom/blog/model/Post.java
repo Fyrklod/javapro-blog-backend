@@ -1,18 +1,21 @@
 package org.diplom.blog.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.Accessors;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+//@Builder
 @Getter
 @Setter
-@NoArgsConstructor
+@Accessors(chain = true)
+@AllArgsConstructor
 @Entity
 @Table(name = "Posts")
 public class Post {
@@ -41,7 +44,7 @@ public class Post {
     @CreationTimestamp
     @Column(name = "time", nullable = false,
             columnDefinition = "timestamp with time zone")
-    private Date date;
+    private LocalDateTime date;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -49,7 +52,8 @@ public class Post {
     @Column(name = "text", nullable = false, columnDefinition="TEXT")
     private String text;
 
-    @Column(name = "view_count", nullable = false)
+    @Column(name = "view_count", nullable = false,
+            columnDefinition = "integer default 0")
     private Integer viewCount;
 
     @OneToMany(mappedBy = "postId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -64,6 +68,8 @@ public class Post {
                inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tags;
 
+    public Post(){}
+
     @PostLoad
     private void fillTransient(){
         if(!StringUtils.isEmpty(moderationStatusValue)){
@@ -76,5 +82,9 @@ public class Post {
         if(moderationStatus!=null){
             this.moderationStatusValue = moderationStatus.toString();
         }
+    }
+
+    public void viewPost(){
+        viewCount++;
     }
 }

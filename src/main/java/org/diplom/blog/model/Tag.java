@@ -7,8 +7,6 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @Entity
 @Table(name = "tags")
 public class Tag {
@@ -18,4 +16,10 @@ public class Tag {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    public Tag(){}
+
+    public Tag(String name){
+        this.name=name;
+    }
 }

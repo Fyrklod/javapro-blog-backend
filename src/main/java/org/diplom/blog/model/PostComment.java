@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -33,7 +34,7 @@ public class PostComment {
     @CreationTimestamp
     @Column(name = "time", nullable = false,
             columnDefinition = "timestamp with time zone")
-    private Date time;
+    private LocalDateTime time;
 
     @Column(name = "text", nullable = false, columnDefinition="TEXT")
     private String text;

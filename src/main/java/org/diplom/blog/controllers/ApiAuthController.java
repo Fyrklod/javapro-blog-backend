@@ -13,45 +13,42 @@ public class ApiAuthController {
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@RequestBody UserRequest request) {
         UserResponse response = new UserResponse();
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<Boolean> logout() {
-        boolean result = true;
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+    public ResponseEntity<CommonResponse> logout() {
+        CommonResponse response = new CommonResponse();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/check")
     public ResponseEntity<UserResponse> check() {
         UserResponse response = new UserResponse();
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/restore")
-    public ResponseEntity<Boolean> restore(String email) {
-        boolean result = false;
-
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+    public ResponseEntity<CommonResponse> restore(String email) {
+        CommonResponse response = new CommonResponse();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/password")
     public ResponseEntity<AuthResponse> password(@RequestBody AuthRequest request) {
-        AuthResponse response = new AuthResponse();
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        AuthResponse response = new AuthResponse(true);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
-        AuthResponse response = new AuthResponse();
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        AuthResponse response = new AuthResponse(true);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/captcha")
     public ResponseEntity<CaptchaResponse> getCaptcha() {
-        CaptchaResponse response = new CaptchaResponse();
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        CaptchaResponse response = new CaptchaResponse("","");
+        return ResponseEntity.ok(response);
     }
 }

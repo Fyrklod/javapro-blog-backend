@@ -8,6 +8,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -29,7 +30,7 @@ public class PostVote {
     @UpdateTimestamp
     @Column(name = "time", nullable = false,
             columnDefinition = "timestamp with time zone")
-    private Date time;
+    private LocalDateTime time;
 
     @Column(name = "value", nullable = false)
     private Integer value;

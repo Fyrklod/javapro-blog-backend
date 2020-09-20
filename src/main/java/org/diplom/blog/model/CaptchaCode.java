@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.sql.DatabaseMetaData;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -22,7 +23,7 @@ public class CaptchaCode {
     @CreationTimestamp
     @Column(name = "time", nullable = false,
             columnDefinition = "timestamp with time zone")
-    private Date time;
+    private LocalDateTime time;
 
     @Column(name = "code", nullable = false)
     private String code;

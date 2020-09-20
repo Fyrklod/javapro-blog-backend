@@ -10,7 +10,6 @@ import org.diplom.blog.dto.UserDto;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResponse {
-    private boolean result;
+public class UserResponse extends CommonResponse {
     private UserDto user;
 }

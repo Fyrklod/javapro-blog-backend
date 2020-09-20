@@ -12,8 +12,9 @@ import java.util.Set;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostRequest {
-    private long time;
+    private long timestamp;
     private boolean active;
-    private Set<String> tags;
+    private String title;
+    private String[] tags;
     private String text;
 }

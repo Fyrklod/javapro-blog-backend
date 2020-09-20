@@ -1,10 +1,12 @@
-package org.diplom.blog.dto;
+package org.diplom.blog.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.diplom.blog.dto.CommentDto;
+import org.diplom.blog.dto.UserDto;
 
 import java.util.List;
 
@@ -13,7 +15,7 @@ import java.util.List;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostDto {
+public class PostResponse {
     private Long id;
     private Long timestamp;
     private Boolean isActive;

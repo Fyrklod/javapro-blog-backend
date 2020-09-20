@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -26,7 +27,7 @@ public class User {
     @CreationTimestamp
     @Column(name = "reg_time", nullable = false,
             columnDefinition = "timestamp with time zone")
-    private Date regTime;
+    private LocalDateTime regTime;
 
     @Column(name = "name", nullable = false)
     private String fullName;

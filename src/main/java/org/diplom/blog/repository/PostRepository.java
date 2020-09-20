@@ -1,6 +1,7 @@
 package org.diplom.blog.repository;
 
 import org.diplom.blog.model.Post;
+import org.diplom.blog.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,16 +9,31 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    Optional<Post> findById(Long id);
-    Page<Post> findByModerationStatusValueAndIsActiveAndDateLessThanEqual(String moderationStatusValue, boolean isActive,
-                                                                          Date date, Pageable pageable);
+    Optional<Post> findByIdAndModerationStatusValueAndIsActiveAndDateLessThanEqual(Long id,
+                                                                                   String moderationStatusValue,
+                                                                                   boolean isActive,
+                                                                                   LocalDateTime date);
 
-    //Page<Post> findByModerationStatusValueAndIsActiveAndDateLessThanEqualAndTitleContainsOrTextContains(String title, String text, Pageable pageable);
+    Page<Post> findByModerationStatusValueAndIsActiveAndDateLessThanEqual(String moderationStatusValue, boolean isActive,
+                                                                          LocalDateTime date, Pageable pageable);
+
+    Page<Post> findByModerationStatusValueAndIsActiveAndDate(String moderationStatusValue, boolean isActive,
+                                                             LocalDate date, Pageable pageable);
+
+    Page<Post> findByModeratorAndIsActive(User moderator, boolean isActive, Pageable pageable);
+    Page<Post> findByModerationStatusValueAndIsActive(String moderationStatus, boolean isActive,
+                                                      Pageable pageable);
+
+    Page<Post> findByAuthorAndIsActive(User author, boolean isActive, Pageable pageable);
+    Page<Post> findByAuthorAndModerationStatusValueAndIsActive(User author, String moderationStatus, boolean isActive,
+                                                               Pageable pageable);
 
     @Query(value = "select p from Post p " +
             " where p.moderationStatusValue=:moderationStatus " +
@@ -27,7 +43,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> searchAllByPattern(@Param("pattern") String pattern,
                                   @Param("moderationStatus") String moderationStatusValue,
                                   @Param("isActive") boolean isActive,
-                                  @Param("date") Date date,
+                                  @Param("date") LocalDateTime date,
                                   Pageable pageable);
 
     @Query(value = "select p" +
@@ -39,7 +55,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     " order by count(ref.id) desc" )
     Page<Post> findAllWithCountOfCommentsOrderByCountDesc(@Param("moderationStatus") String moderationStatusValue,
                                                                  @Param("isActive") boolean isActive,
-                                                                 @Param("date") Date date,
+                                                                 @Param("date") LocalDateTime date,
                                                                  Pageable pageable);
 
     @Query(value = "select p.*, sum(COALESCE(pv.value, 0)) as rating" +
@@ -51,7 +67,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             " order by rating desc, time desc", nativeQuery = true)
     Page<Post> findAllWithCountOfVotesOrderByCountDesc(@Param("moderationStatus") String moderationStatusValue,
                                                        @Param("isActive") boolean isActive,
-                                                       @Param("date") Date date,
+                                                       @Param("date") LocalDateTime date,
                                                        Pageable pageable);
 
     @Query(value = "select p" +
@@ -64,6 +80,44 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByTagName(@Param("tagName") String tagName,
                                 @Param("moderationStatus") String moderationStatusValue,
                                 @Param("isActive") boolean isActive,
-                                @Param("date") Date date,
+                                @Param("date") LocalDateTime date,
                                 Pageable pageable);
+
+    @Query(value = "select p.*" +
+            " from posts p " +
+            " where p.moderation_status=:moderationStatus " +
+            "       and p.is_active=:isActive " +
+            "       and date(p.time)=:date" +
+            " order by time desc", nativeQuery = true)
+    Page<Post> findPublishPostByDate(@Param("moderationStatus") String moderationStatusValue,
+                                     @Param("isActive") boolean isActive,
+                                     @Param("date") LocalDate date,
+                                     Pageable pageable);
+
+    @Query(value = "SELECT distinct EXTRACT(YEAR FROM time) as YYYY" +
+                   " FROM posts", nativeQuery = true)
+    List<Integer> getDistinctYearAllPosts();
+
+   /* @Query(value = "SELECT new org.diplom.blog.dto.EntityCount(p.date as dayPublication" +
+                    "                                          , COUNT(1) as postsCount)" +
+                    " FROM Post p" +
+                    " GROUP BY dayPublication" +
+                    " ORDER BY dayPublication")
+    List<EntityCount<LocalDate>> getCountPostInDayOfYear(@Param("year") Integer year);*/
+
+    @Query(value = "SELECT text(date(time)) as dayPublication" +
+                    ",   count(1) as postsCount" +
+                    " FROM posts" +
+                    " WHERE EXTRACT(YEAR FROM time)=:year " +
+                    " GROUP BY dayPublication" +
+                    " ORDER BY dayPublication", nativeQuery = true)
+    List<Object[]> getCountPostInDayOfYear(@Param("year") Integer year);
+
+    @Query(value =  "SELECT count(id) as postsCount, " +
+            "           sum(view_count) as viewsCount, " +
+            "           min(time) as firstPublication, " +
+            "           (SELECT count(1) FROM post_votes WHERE value > 0) as likesCount, " +
+            "           (SELECT count(1) FROM post_votes WHERE value < 0) as dislikesCount " +
+            "FROM posts", nativeQuery = true)
+    List<Object[]> getFullStatisticOfPost();
 }

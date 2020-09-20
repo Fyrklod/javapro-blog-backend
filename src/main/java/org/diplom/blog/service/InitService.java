@@ -2,7 +2,7 @@ package org.diplom.blog.service;
 
 import lombok.AllArgsConstructor;
 import org.diplom.blog.dto.response.InitResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,10 +13,9 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class InitService {
 
-    //@Autowired
-    private InitResponse initResponse;
+    private final InitResponse initResponse;
 
-    public InitResponse getInit(){
-        return initResponse;
+    public ResponseEntity<InitResponse> getInit(){
+        return ResponseEntity.ok(initResponse);
     }
 }

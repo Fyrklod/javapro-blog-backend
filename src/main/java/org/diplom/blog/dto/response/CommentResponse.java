@@ -11,7 +11,7 @@ import org.diplom.blog.dto.Error;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentResponse {
-    private Integer id;
+    private Long id;
     private Boolean result;
     private Error errors;
 }

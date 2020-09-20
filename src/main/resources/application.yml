@@ -1,6 +1,5 @@
 spring:
   jpa:
-    generate-dll: false
     show-sql: false
     hibernate:
       ddl-auto: validate
@@ -9,20 +8,13 @@ spring:
     url: jdbc:postgresql://localhost:5432/javablog
     username: snet
     password: snet
-flyway:
-  user: snet
-  password: snet
-#spring.datasource.url: jdbc:mysql://localhost:3306/diarybook?serverTimezone=UTC&useSSL=false
-#spring.datasource.username: root
-#spring.datasource.password: password
-#spring.jpa.database-platform: org.hibernate.dialect.MySQL5Dialect
 
-
-
-
-blog.info.title: DevPub
-blog.info.subtitle: Рассказы разработчиков
-blog.info.copyright: Дмитрий Сергеев
-blog.info.copyrightFrom: 2005
-blog.info.contact.phone: +7 903 666-44-55
-blog.info.contact.email: mail@mail.ru
+blog:
+  info:
+    title: Блог интеграции
+    subtitle: Общая информация
+    copyright: Андрей Казаков
+    copyrightFrom: 2020
+    contact:
+      phone: +7 903 666-44-55
+      email: mail@mail.ru

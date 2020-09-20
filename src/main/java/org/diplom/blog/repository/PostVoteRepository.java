@@ -19,7 +19,9 @@ import java.util.Optional;
 public interface PostVoteRepository extends CrudRepository<PostVote, Long> {
     Optional<PostVote> findByPostIdAndUserId(long postId, long userId);
 
-    @Query(value = "insert into post_votes (post_id, user_id, value) VALUES (:postId, :userId, :value)", nativeQuery = true)
+    @Query(value = "INSERT INTO post_votes (post_id, user_id, value) " +
+                   "VALUES (:postId, :userId, :value)",
+            nativeQuery = true)
     void addPostVote(@Param("postId")long postId,
                          @Param("userId")long userId,
                          @Param("value")int value);
