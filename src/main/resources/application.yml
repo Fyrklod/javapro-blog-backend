@@ -5,9 +5,20 @@ spring:
       ddl-auto: validate
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/javablog
-    username: snet
-    password: snet
+    url: jdbc:${SPRING_DATASOURCE_URL:postgresql://localhost:5432/javablog}
+    username: ${SPRING_DATASOURCE_USERNAME:snet}
+    password: ${SPRING_DATASOURCE_PASSWORD:snet}
+
+server:
+  port: ${PORT:9090}
+
+security:
+  jwt:
+    url-authentication: /api/auth/login
+    header: Authorization
+    prefix: Bearer
+    secret: JWTSecretKeyForBlogBackend092020
+    expiration: 864000000 #10 дней
 
 blog:
   info:

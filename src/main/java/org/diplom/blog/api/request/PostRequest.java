@@ -1,11 +1,9 @@
-package org.diplom.blog.dto.request;
+package org.diplom.blog.api.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Set;
 
 @Getter
 @Setter

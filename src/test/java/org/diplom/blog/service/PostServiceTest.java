@@ -1,6 +1,6 @@
 package org.diplom.blog.service;
 
-import org.diplom.blog.dto.request.PostRequest;
+import org.diplom.blog.api.request.PostRequest;
 import org.diplom.blog.model.User;
 import org.diplom.blog.repository.UserRepository;
 import org.junit.jupiter.api.Test;

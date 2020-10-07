@@ -2,23 +2,23 @@ package org.diplom.blog.controllers;
 
 import lombok.AllArgsConstructor;
 import org.diplom.blog.dto.Mode;
-import org.diplom.blog.dto.response.PostResponse;
+import org.diplom.blog.api.response.PostResponse;
 import org.diplom.blog.dto.PostStatus;
-import org.diplom.blog.dto.request.PostRequest;
-import org.diplom.blog.dto.request.VoteRequest;
-import org.diplom.blog.dto.response.CommonResponse;
-import org.diplom.blog.dto.response.PostListResponse;
-import org.diplom.blog.dto.response.UploadResponse;
+import org.diplom.blog.api.request.PostRequest;
+import org.diplom.blog.api.request.VoteRequest;
+import org.diplom.blog.api.response.CommonResponse;
+import org.diplom.blog.api.response.PostListResponse;
+import org.diplom.blog.api.response.UploadResponse;
 import org.diplom.blog.model.ModerationStatus;
 import org.diplom.blog.model.User;
 import org.diplom.blog.service.PostService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @RestController
 @RequestMapping("/api/post")
@@ -28,6 +28,7 @@ public class ApiPostController {
     private final PostService postService;
 
     @GetMapping("")
+    //@PreAuthorize("hasAuthority('user:reader')")
     public ResponseEntity<PostListResponse> getPosts(@RequestParam(defaultValue = "0") int offset,
                                                      @RequestParam(defaultValue = "50") int limit,
                                                      @RequestParam(defaultValue = "recent") String mode) {

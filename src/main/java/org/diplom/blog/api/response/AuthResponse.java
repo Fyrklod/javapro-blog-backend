@@ -1,10 +1,8 @@
-package org.diplom.blog.dto.response;
+package org.diplom.blog.api.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.diplom.blog.dto.AuthError;
 
 @Getter

@@ -1,4 +1,4 @@
-package org.diplom.blog.dto.request;
+package org.diplom.blog.api.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

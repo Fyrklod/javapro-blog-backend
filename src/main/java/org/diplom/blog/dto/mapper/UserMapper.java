@@ -10,11 +10,11 @@ public class UserMapper {
                 .setName(user.getFullName())
                 .setPhoto(user.getPhoto())
                 //TODO:откуда?
-                .setRemovePhoto(0)
+                //.setRemovePhoto(0)
                 .setEmail(user.getEmail())
                 .setModeration(user.isModerator())
                 //TODO:откуда?
-                .setModerationCount(0)
+                //.setModerationCount(0)
                 //TODO:откуда?
                 .setSettings(false);
     }
