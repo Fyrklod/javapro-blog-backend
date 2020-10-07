@@ -1,11 +1,10 @@
 package org.diplom.blog.dto.mapper;
 
-import org.diplom.blog.dto.response.PostResponse;
+import org.diplom.blog.api.response.PostResponse;
 import org.diplom.blog.model.Post;
 import org.diplom.blog.model.Tag;
 import org.diplom.blog.utils.DateUtil;
 
-import java.sql.Timestamp;
 import java.util.stream.Collectors;
 
 public class PostMapper {

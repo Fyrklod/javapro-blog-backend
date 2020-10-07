@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.diplom.blog.dto.EntityCount;
 import org.diplom.blog.dto.TagDto;
 import org.diplom.blog.dto.mapper.TagMapper;
-import org.diplom.blog.dto.response.TagResponse;
+import org.diplom.blog.api.response.TagResponse;
 import org.diplom.blog.model.ModerationStatus;
 import org.diplom.blog.model.Tag;
 import org.diplom.blog.repository.TagsRepository;

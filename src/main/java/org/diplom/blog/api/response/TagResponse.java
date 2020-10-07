@@ -1,4 +1,4 @@
-package org.diplom.blog.dto.response;
+package org.diplom.blog.api.response;
 
 import lombok.Getter;
 import lombok.Setter;

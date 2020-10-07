@@ -1,54 +1,52 @@
 package org.diplom.blog.controllers;
 
-import org.diplom.blog.dto.request.*;
-import org.diplom.blog.dto.response.*;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
+import org.diplom.blog.api.request.AuthRequest;
+import org.diplom.blog.api.request.UserRequest;
+import org.diplom.blog.api.response.*;
+import org.diplom.blog.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class ApiAuthController {
 
+    private final UserService userService;
+
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@RequestBody UserRequest request) {
-        UserResponse response = new UserResponse();
-        return ResponseEntity.ok(response);
+        return userService.login(request);
     }
 
     @GetMapping("/logout")
     public ResponseEntity<CommonResponse> logout() {
-        CommonResponse response = new CommonResponse();
-        return ResponseEntity.ok(response);
+        return userService.logout();
     }
 
     @GetMapping("/check")
     public ResponseEntity<UserResponse> check() {
-        UserResponse response = new UserResponse();
-        return ResponseEntity.ok(response);
+        return userService.check();
     }
 
     @PostMapping("/restore")
     public ResponseEntity<CommonResponse> restore(String email) {
-        CommonResponse response = new CommonResponse();
-        return ResponseEntity.ok(response);
+        return userService.restore(email);
     }
 
     @PostMapping("/password")
     public ResponseEntity<AuthResponse> password(@RequestBody AuthRequest request) {
-        AuthResponse response = new AuthResponse(true);
-        return ResponseEntity.ok(response);
+        return userService.password(request);
     }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
-        AuthResponse response = new AuthResponse(true);
-        return ResponseEntity.ok(response);
+        return userService.register(request);
     }
 
     @GetMapping("/captcha")
     public ResponseEntity<CaptchaResponse> getCaptcha() {
-        CaptchaResponse response = new CaptchaResponse("","");
-        return ResponseEntity.ok(response);
+        return userService.getCaptcha();
     }
 }

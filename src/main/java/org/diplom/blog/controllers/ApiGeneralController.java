@@ -1,15 +1,16 @@
 package org.diplom.blog.controllers;
 
 import lombok.AllArgsConstructor;
+import org.diplom.blog.api.request.CommentRequest;
+import org.diplom.blog.api.request.ModerationRequest;
 import org.diplom.blog.dto.SettingsDto;
-import org.diplom.blog.dto.response.StatisticsResponse;
+import org.diplom.blog.api.response.StatisticsResponse;
 import org.diplom.blog.dto.UserDto;
-import org.diplom.blog.dto.request.*;
-import org.diplom.blog.dto.response.*;
+import org.diplom.blog.api.response.*;
 import org.diplom.blog.service.GeneralService;
 import org.diplom.blog.service.InitService;
 import org.diplom.blog.service.TagService;
-import org.json.simple.JSONObject;
+//import org.json.simple.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

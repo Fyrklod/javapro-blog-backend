@@ -1,9 +1,8 @@
-package org.diplom.blog.dto.response;
+package org.diplom.blog.api.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter

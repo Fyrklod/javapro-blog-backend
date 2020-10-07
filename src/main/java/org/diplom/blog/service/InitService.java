@@ -1,7 +1,7 @@
 package org.diplom.blog.service;
 
 import lombok.AllArgsConstructor;
-import org.diplom.blog.dto.response.InitResponse;
+import org.diplom.blog.api.response.InitResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 

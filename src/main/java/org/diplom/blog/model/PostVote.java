@@ -27,7 +27,7 @@ public class PostVote {
     @Column(name="post_id")
     private Long postId;
 
-    @UpdateTimestamp
+    @CreationTimestamp
     @Column(name = "time", nullable = false,
             columnDefinition = "timestamp with time zone")
     private LocalDateTime time;
