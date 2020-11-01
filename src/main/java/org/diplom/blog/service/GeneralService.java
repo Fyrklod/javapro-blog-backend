@@ -1,17 +1,19 @@
 package org.diplom.blog.service;
 
-import lombok.AllArgsConstructor;
-import org.diplom.blog.dto.Error;
+import org.diplom.blog.dto.Decision;
 import org.diplom.blog.dto.SettingsDto;
 import org.diplom.blog.api.response.StatisticsResponse;
 import org.diplom.blog.dto.UserDto;
-import org.diplom.blog.api.request.CommentRequest;
 import org.diplom.blog.api.request.ModerationRequest;
 import org.diplom.blog.api.response.*;
 import org.diplom.blog.model.GlobalSetting;
+import org.diplom.blog.model.ModerationStatus;
+import org.diplom.blog.model.Post;
+import org.diplom.blog.model.User;
 import org.diplom.blog.repository.PostRepository;
 import org.diplom.blog.repository.SettingsRepository;
 import org.diplom.blog.utils.DateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,55 +31,60 @@ import java.util.regex.Pattern;
  * @date 08.08.2020
  */
 @Service
-@AllArgsConstructor
 public class GeneralService {
 
+    private final UserService userService;
     private final PostRepository postRepository;
     private final SettingsRepository settingsRepository;
-    private final Map<String, Boolean> settingsMap;
+
+    @Autowired
+    public GeneralService(UserService userService,
+                          PostRepository postRepository,
+                          SettingsRepository settingsRepository) {
+        this.userService = userService;
+        this.postRepository = postRepository;
+        this.settingsRepository = settingsRepository;
+    }
 
     public ResponseEntity<SettingsDto> getGlobalSettings(){
         SettingsDto settings = new SettingsDto();
         Iterable<GlobalSetting> globalSettings = settingsRepository.findAll();
         for (GlobalSetting setting : globalSettings) {
-            settings.put(setting.getCode(), setting.getValue().equals("YES"));
+            settings.put(setting.getCode(),  setting.getValue().equals("YES"));
         }
-
-        settingsMap.putAll(settings);
 
         return ResponseEntity.ok(settings);
     }
 
     @Transactional
-    public void setGlobalSettings(SettingsDto settings) {
+    public void setGlobalSettings(SettingsDto settings) throws Exception {
 
         if(settings != null && settings.size() > 0){
             List<GlobalSetting> globalSettings = new ArrayList<GlobalSetting>();
 
-            for(String code : settings.keySet()){
-                GlobalSetting setting = settingsRepository.findByCode(code);
-                String settingValue = settings.get(code) ? "NO" : "YES";
-                setting.setValue(settingValue);
-                globalSettings.add(setting);
+            for(String code : settings.keySet()) {
+                if(settings.get(code) == null){
+                    continue;
+                }
+
+                GlobalSetting setting = getSettingValueByCode(code);
+                String settingValue = settings.get(code) ? "YES" : "NO";
+                if(!settingValue.equals(setting.getCode())) {
+                    setting.setValue(settingValue);
+                    globalSettings.add(setting);
+                }
             }
 
-            settingsRepository.saveAll(globalSettings);
+            if(!globalSettings.isEmpty()) {
+                settingsRepository.saveAll(globalSettings);
+            }
         }
     }
 
+    //TODO: доработать
     public ResponseEntity<String> addImage(String contentType, String upload){
         String path = "";
         return ResponseEntity.ok(path);
-    }
-
-    //TODO: доработать вместе с репозиторием
-    public ResponseEntity<CommentResponse> addComment(CommentRequest comment) {
-        CommentResponse response = new CommentResponse();
-        Error error = new Error();
-        error.setText("Метод не реализован");
-        response.setErrors(error);
-        response.setResult(false);
-        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<CalendarResponse> getCalendar(String year) {
@@ -104,13 +111,24 @@ public class GeneralService {
         return ResponseEntity.ok(response);
     }
 
+    //TODO: доработать
     public ResponseEntity<AuthResponse> profile(String contentType, UserDto profile) {
         AuthResponse response = new AuthResponse(true);
         return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<StatisticsResponse> getMyStatistics() {
-        StatisticsResponse response = new StatisticsResponse();
+        User currentUser = userService.getCurrentUser();
+
+        List<Object[]> statistics = postRepository.getStatisticOfPostByUser(currentUser.getId());
+
+        StatisticsResponse response = new StatisticsResponse()
+                .setPostsCount(((BigInteger)statistics.get(0)[0]).longValue())
+                .setLikesCount(((BigInteger) statistics.get(0)[3]).longValue())
+                .setDislikesCount(((BigInteger) statistics.get(0)[4]).longValue())
+                .setViewsCount(((BigInteger) statistics.get(0)[1]).longValue())
+                .setFirstPublication(DateUtil.getLongFromTimestamp((Timestamp) statistics.get(0)[2]));
+
         return ResponseEntity.ok(response);
     }
 
@@ -128,17 +146,37 @@ public class GeneralService {
         return ResponseEntity.ok(response);
     }
 
+    @Transactional
     public ResponseEntity<CommonResponse> moderationPost(ModerationRequest request) {
         CommonResponse response = new CommonResponse();
-        response.setResult(true);
+
+        try {
+            Post post = postRepository.findById(request.getPostId())
+                            .orElseThrow(() -> new Exception("Not found post"));
+            User moderator = userService.getCurrentUser();
+            post.setModerationStatusValue(
+                    request.getDecision().equals(Decision.ACCEPT)
+                            ? ModerationStatus.ACCEPTED.toString()
+                            : ModerationStatus.DECLINED.toString()
+            );
+            post.setModerator(moderator);
+            postRepository.save(post);
+            response.setResult(true);
+        } catch (Exception ex) {
+            response.setResult(false);
+        }
+
         return ResponseEntity.ok(response);
     }
 
-    public Boolean getSettingValueByCode(String settingCode) {
-        if(settingsMap.containsKey(settingCode)) {
-            return settingsMap.get(settingCode);
-        }
+    public Boolean getBooleanSettingValueByCode(String settingCode) throws Exception {
+        GlobalSetting setting = getSettingValueByCode(settingCode);
+        return setting.getValue().equals("YES");
+    }
 
-        return false;
+    private GlobalSetting getSettingValueByCode(String settingCode) throws Exception {
+        return settingsRepository.findByCode(settingCode)
+                .orElseThrow(() -> new Exception(String.format("В базе отсутствует настройка с кодом %s"
+                        , settingCode)));
     }
 }

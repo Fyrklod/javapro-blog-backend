@@ -2,25 +2,26 @@ package org.diplom.blog.service;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.diplom.blog.api.response.*;
 import org.diplom.blog.dto.Error;
 import org.diplom.blog.dto.Mode;
-import org.diplom.blog.api.response.PostResponse;
 import org.diplom.blog.dto.PostStatus;
 import org.diplom.blog.dto.mapper.PostMapper;
 import org.diplom.blog.api.request.PostRequest;
-import org.diplom.blog.api.response.CommonResponse;
-import org.diplom.blog.api.response.PostListResponse;
-import org.diplom.blog.api.response.UploadResponse;
 import org.diplom.blog.model.*;
 import org.diplom.blog.repository.PostRepository;
 import org.diplom.blog.repository.PostVoteRepository;
 import org.diplom.blog.utils.DateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,17 +33,29 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
     private final PostVoteRepository postVoteRepository;
     private final TagService tagService;
     private final GeneralService generalService;
+    private final UserService userService;
+
+    @Autowired
+    public PostService(PostRepository postRepository,
+                       PostVoteRepository postVoteRepository,
+                       TagService tagService,
+                       GeneralService generalService,
+                       UserService userService) {
+        this.postRepository = postRepository;
+        this.postVoteRepository = postVoteRepository;
+        this.tagService = tagService;
+        this.generalService = generalService;
+        this.userService = userService;
+    }
 
     @Transactional
-    public ResponseEntity<PostResponse> getPostById(Long id, User reader){
-
+    public ResponseEntity<PostResponse> getPostById(Long id){
         //Метод выводит данные конкретного поста для отображения на странице поста, в том числе,
         // список комментариев и тэгов, привязанных к данному посту. Выводит пост в любом случае,
         // если пост активен (параметр is_active в базе данных равен 1),
@@ -58,10 +71,15 @@ public class PostService {
         }
 
         Post post = optionalPost.get();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if(!reader.isModerator() && !reader.equals(post.getAuthor())) {
-            post.viewPost();
-            postRepository.save(post);
+        if (authentication instanceof UsernamePasswordAuthenticationToken) {
+            User reader = (User) authentication.getPrincipal();
+
+            if(!reader.isModerator() && !reader.equals(post.getAuthor())) {
+                post.viewPost();
+                postRepository.save(post);
+            }
         }
 
         PostResponse response = PostMapper.toPostResponse(post);
@@ -146,9 +164,9 @@ public class PostService {
         }
     }
 
-    public ResponseEntity<PostListResponse> getPostForModeration(ModerationStatus status, User currentUser, int pageIndex, int pageSize){
-
+    public ResponseEntity<PostListResponse> getPostForModeration(ModerationStatus status, int pageIndex, int pageSize){
         try {
+            User currentUser = userService.getCurrentUser();
 
             if(!currentUser.isModerator()){
                 return ResponseEntity.status(HttpStatus.LOCKED).body(null);
@@ -169,8 +187,8 @@ public class PostService {
     }
 
     @SneakyThrows
-    public ResponseEntity<PostListResponse> getMyPosts(PostStatus postStatus, User currentUser,
-                                                       int pageIndex, int pageSize){
+    public ResponseEntity<PostListResponse> getMyPosts(PostStatus postStatus, int pageIndex, int pageSize) {
+        User currentUser = userService.getCurrentUser();
 
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
         Page<Post> pages = postStatus.equals(PostStatus.INACTIVE)
@@ -182,15 +200,16 @@ public class PostService {
         return preparePostsResponse(pages);
     }
 
-    public ResponseEntity<UploadResponse> addPost(PostRequest request, User author) {
-        return savePost(0L, request, author);
+    public ResponseEntity<UploadResponse> addPost(PostRequest request)throws Exception {
+        return savePost(0L, request);
     }
 
-    public ResponseEntity<UploadResponse> editPost(Long id, PostRequest request, User author){
-        return savePost(id, request, author);
+    public ResponseEntity<UploadResponse> editPost(Long id, PostRequest request) throws Exception{
+        return savePost(id, request);
     }
 
-    public ResponseEntity<CommonResponse> savePostVote(Long postId, User user, int value){
+    public ResponseEntity<CommonResponse> savePostVote(Long postId, int value) {
+        User user = userService.getCurrentUser();
         CommonResponse response = new CommonResponse();
         boolean result = true;
         PostVote postVote = null;
@@ -222,9 +241,10 @@ public class PostService {
 
     //TODO: статус поста при отключенной настройки ПРЕМОДЕРАЦИЯ и если это черновик ?
     @Transactional
-    private ResponseEntity<UploadResponse> savePost(Long id, PostRequest request, User author) {
+    private ResponseEntity<UploadResponse> savePost(Long id, PostRequest request) throws Exception {
         UploadResponse response;
-        Boolean postPremoderation = generalService.getSettingValueByCode("POST_PREMODERATION");
+        Boolean postPremoderation = generalService.getBooleanSettingValueByCode("POST_PREMODERATION");
+        User author = userService.getCurrentUser();
 
         if(request.getTitle().length() > 3 && request.getText().length() > 50){
             List<Tag> tags = tagService.saveTagByListName(Arrays.asList(request.getTags()));
@@ -251,7 +271,8 @@ public class PostService {
                             postPremoderation
                                 ? ModerationStatus.NEW
                                 : ModerationStatus.ACCEPTED
-                    );
+                    )
+                    .setViewCount(0);
 
             postRepository.save(post);
 

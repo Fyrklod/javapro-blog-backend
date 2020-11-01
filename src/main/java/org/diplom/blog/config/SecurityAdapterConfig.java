@@ -1,29 +1,24 @@
 package org.diplom.blog.config;
 
-import org.diplom.blog.security.JWTAuthenticationFilter;
-import org.diplom.blog.security.JWTAuthorizationFilter;
+import org.diplom.blog.security.SecurityConstant;
+import org.diplom.blog.security.jwt.JwtTokenVerifier;
+import org.diplom.blog.security.jwt.JwtUsernamePasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.context.annotation.RequestScope;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
 
 /**
  * @author Andrey.Kazakov
@@ -31,78 +26,59 @@ import java.util.Arrays;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityAdapterConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public SecurityAdapterConfig(@Qualifier("securityService") UserDetailsService userDetailsService){
+    public SecurityAdapterConfig(@Qualifier("blogService") UserDetailsService userDetailsService,
+                                 PasswordEncoder passwordEncoder){
         this.userDetailsService = userDetailsService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                    .cors()
-                .and()
-                    .csrf().disable()
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                    .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
-                .and()
-                    //.apply(new JwtSecurityAdapter(authenticationManagerBean()))
-                    .addFilterBefore(new JWTAuthorizationFilter(), JWTAuthenticationFilter.class)
-                    .addFilterAfter(new JWTAuthenticationFilter(authenticationManagerBean()), JWTAuthorizationFilter.class)
-                //.and()
-                    .authorizeRequests()
-                    //.antMatchers(HttpMethod.GET, "/**").permitAll()
-                    .antMatchers("/**").permitAll()
-                    //.antMatchers("/init/**").permitAll()
-                    .anyRequest().authenticated()
-                .and()
-                    .formLogin()
-                    .usernameParameter("email")
-                    .permitAll()
-                    .and()
-                    .logout()
-                    .permitAll();
+            .csrf().disable()
+            //.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            //.and()
+            //    .addFilter(new JwtUsernamePasswordAuthenticationFilter(authenticationManager()))
+            //    .addFilterAfter(new JwtTokenVerifier(), JwtUsernamePasswordAuthenticationFilter.class)
+            .authorizeRequests()
+            .antMatchers("/**").permitAll()
+            .anyRequest()
+            .authenticated()
+            .and()
+            .formLogin().disable()
+            .httpBasic().disable()
+            //.and()
+            .logout()//
+                .logoutUrl("/api/auth/logout")
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID");
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+        auth.authenticationProvider(daoAuthenticationProvider());
     }
 
-    /*@Bean
+    @Bean
     protected DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
 
         return daoAuthenticationProvider;
-    }*/
-
-    @Bean
-    protected PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder(12);
     }
 
+    @Override
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "HEAD"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-    @Bean
-    @RequestScope
-    public Authentication authentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 }

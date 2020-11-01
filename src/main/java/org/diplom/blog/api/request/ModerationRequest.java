@@ -13,6 +13,6 @@ import org.diplom.blog.dto.Decision;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ModerationRequest {
     @JsonProperty("post_id")
-    private Integer postId;
+    private Long postId;
     private Decision decision;
 }

@@ -1,16 +1,15 @@
 package org.diplom.blog.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+@Builder
 @Getter
-@Setter
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "post_comments")

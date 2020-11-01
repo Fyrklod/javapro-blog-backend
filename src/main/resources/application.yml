@@ -5,20 +5,31 @@ spring:
       ddl-auto: validate
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:${SPRING_DATASOURCE_URL:postgresql://localhost:5432/javablog}
+    url: jdbc:${SPRING_DATASOURCE_URL:postgresql://localhost:5432/javablog?serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:snet}
     password: ${SPRING_DATASOURCE_PASSWORD:snet}
+  mail:
+    protocol: smtps
+    host: smtp.gmail.com
+    port: 465
+    username: JavaESBBlog@gmail.com
+    password: Blog!23$567
+
+mail:
+  debug: true
 
 server:
   port: ${PORT:9090}
 
+#JWT Configuration
 security:
   jwt:
     url-authentication: /api/auth/login
-    header: Authorization
+    authorization-header-name: Authorization
     prefix: Bearer
     secret: JWTSecretKeyForBlogBackend092020
-    expiration: 864000000 #10 дней
+    token-expiration-day: 10 #864000000 #10 дней
+    password-level-security: 12
 
 blog:
   info:

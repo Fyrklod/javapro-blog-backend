@@ -1,19 +1,15 @@
 package org.diplom.blog.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Builder;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Builder
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class AuthError {
-    private String email;
-    private String photo;
-    private String name;
-    private String code;
-    private String password;
-    private String captcha;
+    private final String email;
+    private final String photo;
+    private final String name;
+    private final String code;
+    private final String password;
+    private final String captcha;
 }

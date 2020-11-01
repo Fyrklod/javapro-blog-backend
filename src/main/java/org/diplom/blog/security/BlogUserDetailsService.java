@@ -16,23 +16,19 @@ import org.springframework.stereotype.Service;
  * @author Andrey.Kazakov
  * @date 24.09.2020
  */
-@Slf4j
-@Service("securityService")
-public class SecurityUserDetailsService implements UserDetailsService {
+@Service("blogService")
+public class BlogUserDetailsService implements UserDetailsService {
 
-    //private final UserService userService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Autowired
-    public SecurityUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public BlogUserDetailsService(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-//        User user = userService.findByEmail(email);
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User with email '" + email + "' not found"));
-        return SecurityUserDetails.fromUser(user);
+        User user = userService.getUserByEmail(email);
+        return user;//BlogUserDetails.fromUser(user);
     }
 }

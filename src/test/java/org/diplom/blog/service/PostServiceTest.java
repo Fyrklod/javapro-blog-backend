@@ -1,5 +1,7 @@
 package org.diplom.blog.service;
 
+import com.github.cage.GCage;
+import io.jsonwebtoken.lang.Assert;
 import org.diplom.blog.api.request.PostRequest;
 import org.diplom.blog.model.User;
 import org.diplom.blog.repository.UserRepository;
@@ -7,7 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author Andrey.Kazakov
@@ -20,10 +27,13 @@ public class PostServiceTest {
     private PostService postService;
 
     @Autowired
+    private CaptchaService captchaService;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Test
-    public void addPostTest(){
+    public void addPostTest() throws Exception {
         String[] tags = "ta111, tag2, tag3".split(",\\s+");
 
         User user = userRepository.findById(1L).orElseThrow();
@@ -38,6 +48,6 @@ public class PostServiceTest {
         postRequest.setActive(true);
         postRequest.setTags(tags);
 
-        postService.addPost(postRequest, user);
+        postService.addPost(postRequest);
     }
 }

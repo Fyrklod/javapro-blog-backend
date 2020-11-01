@@ -8,6 +8,7 @@ import org.diplom.blog.api.response.TagResponse;
 import org.diplom.blog.model.ModerationStatus;
 import org.diplom.blog.model.Tag;
 import org.diplom.blog.repository.TagsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,14 @@ import java.util.stream.Collectors;
  * @date 15.08.2020
  */
 @Service
-@AllArgsConstructor
 public class TagService {
 
     private final TagsRepository tagsRepository;
+
+    @Autowired
+    public TagService(TagsRepository tagsRepository) {
+        this.tagsRepository = tagsRepository;
+    }
 
     @Transactional
     public List<Tag> saveTagByListName(List<String> names){

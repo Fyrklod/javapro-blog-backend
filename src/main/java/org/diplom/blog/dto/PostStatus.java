@@ -19,6 +19,7 @@ public enum PostStatus {
             case "pending": return PENDING;
             case "declined": return DECLINED;
             case "published": return PUBLISHED;
+            case "inactive": return INACTIVE;
             default:
                 throw new Exception("Данного значения не существует");
         }

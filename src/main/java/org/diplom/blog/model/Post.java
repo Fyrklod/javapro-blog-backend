@@ -6,12 +6,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
-//@Builder
+
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -84,7 +82,7 @@ public class Post {
         }
     }
 
-    public void viewPost(){
+    public synchronized void viewPost(){
         viewCount++;
     }
 }

@@ -16,6 +16,8 @@ import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
+    Long countByModerationStatusValueAndIsActive(String moderationStatus, boolean isActive);
+
     Optional<Post> findByIdAndModerationStatusValueAndIsActiveAndDateLessThanEqual(Long id,
                                                                                    String moderationStatusValue,
                                                                                    boolean isActive,
@@ -120,4 +122,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "           (SELECT count(1) FROM post_votes WHERE value < 0) as dislikesCount " +
             "FROM posts", nativeQuery = true)
     List<Object[]> getFullStatisticOfPost();
+
+    @Query(value =  "SELECT count(id) as postsCount, " +
+            "           sum(view_count) as viewsCount, " +
+            "           min(time) as firstPublication, " +
+            "           (SELECT count(1) FROM post_votes WHERE value > 0 and user_id = :author) as likesCount, " +
+            "           (SELECT count(1) FROM post_votes WHERE value < 0 and user_id = :author) as dislikesCount " +
+            "FROM posts " +
+            "WHERE user_id = :author", nativeQuery = true)
+    List<Object[]> getStatisticOfPostByUser(@Param("author") long userId);
 }

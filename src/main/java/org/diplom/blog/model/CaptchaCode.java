@@ -1,8 +1,6 @@
 package org.diplom.blog.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -10,9 +8,10 @@ import java.sql.DatabaseMetaData;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+@Builder
 @Getter
-@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "captcha_codes")
 public class CaptchaCode {

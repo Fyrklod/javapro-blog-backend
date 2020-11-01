@@ -12,8 +12,8 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentRequest {
     @JsonProperty("parent_id")
-    private String parentId;
+    private Long parentId;
     @JsonProperty("post_id")
-    private Integer postId;
+    private Long postId;
     private String text;
 }

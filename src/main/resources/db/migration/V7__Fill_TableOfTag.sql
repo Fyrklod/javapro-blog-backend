@@ -1,4 +1,4 @@
-INSERT INTO public.tags(name)
+INSERT INTO tags(name)
 	VALUES ('Message'),
 	('Channel'),
 	('Router'),

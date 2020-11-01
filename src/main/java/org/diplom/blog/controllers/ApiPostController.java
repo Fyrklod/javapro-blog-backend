@@ -18,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
+import java.security.Principal;
 import java.time.LocalDate;
 
 @RestController
@@ -28,7 +29,6 @@ public class ApiPostController {
     private final PostService postService;
 
     @GetMapping("")
-    //@PreAuthorize("hasAuthority('user:reader')")
     public ResponseEntity<PostListResponse> getPosts(@RequestParam(defaultValue = "0") int offset,
                                                      @RequestParam(defaultValue = "50") int limit,
                                                      @RequestParam(defaultValue = "recent") String mode) {
@@ -69,66 +69,52 @@ public class ApiPostController {
         }
     }
 
-    //TODO: Security
     @GetMapping("/moderation")
+    @PreAuthorize("hasAuthority('user:approver')")
     public ResponseEntity<PostListResponse> getPostForModeration(@RequestParam(defaultValue = "0") int offset,
                                                                  @RequestParam(defaultValue = "50") int limit,
-                                                                 @RequestParam(defaultValue = "new") String moderationStatus) {
-        //TODO: заменить параметр User на себя если ты модератор
-        User currentUser = new User();
-        return postService.getPostForModeration(ModerationStatus.fromString(moderationStatus),
-                                                currentUser, offset, limit);
+                                                                 @RequestParam(defaultValue = "new") String status) {
+
+        return postService.getPostForModeration(ModerationStatus.fromString(status),
+                                                offset, limit);
     }
 
-    //TODO: Security
     @GetMapping("/my")
+    @PreAuthorize("hasAuthority('user:writer')")
     public ResponseEntity<PostListResponse> getMyPost(@RequestParam(defaultValue = "0") int offset,
                                                       @RequestParam(defaultValue = "50") int limit,
-                                                      @RequestParam String postStatus) {
-        //TODO: getUser from SecurityContext
-        User currentUser = new User();
-        return postService.getMyPosts(PostStatus.fromString(postStatus), currentUser, offset, limit);
+                                                      @RequestParam String status) {
+
+        return postService.getMyPosts(PostStatus.fromString(status), offset, limit);
     }
 
     @GetMapping("/{id}")
     public @ResponseBody ResponseEntity<PostResponse> getPostById(@PathVariable long id) {
-        //TODO:replace to User from SecurityContext
-        User user = new User();
-        return postService.getPostById(id, user);
+        return postService.getPostById(id);
     }
 
     @PostMapping("/")
-    public ResponseEntity<UploadResponse> addPost(@RequestBody PostRequest request) {
-        //TODO:replace to User from SecurityContext
-        User user = new User();
-        return  postService.addPost(request, user);
+    @PreAuthorize("hasAuthority('user:writer')")
+    public ResponseEntity<UploadResponse> addPost(@RequestBody PostRequest request) throws Exception {
+        return  postService.addPost(request);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('user:writer')")
     public @ResponseBody ResponseEntity<UploadResponse> editPost(@PathVariable Long id,
-                                       @RequestBody PostRequest request) {
-        //TODO:replace to User from SecurityContext
-        User user = new User();
-        return postService.editPost(id, request, user);
+                                       @RequestBody PostRequest request) throws Exception {
+        return postService.editPost(id, request);
     }
 
-    //Security
-    //TODO: при подключении Security внести измеения в код (вместо  захарткоженного значения, брать значение пользователя)
     @PostMapping("/like")
+    @PreAuthorize("hasAuthority('user:writer')")
     public ResponseEntity<CommonResponse> likePost(@RequestBody VoteRequest request) {
-        //TODO:replace to User from SecurityContext
-        User user = new User();
-        user.setId(1L);
-        return postService.savePostVote(request.getPostId(), user, 1);
+        return postService.savePostVote(request.getPostId(), 1);
     }
 
-    //Security
-    //TODO: при подключении Security внести измеения в код (вместо  захарткоженного значения, брать значение пользователя)
     @PostMapping("/dislike")
+    @PreAuthorize("hasAuthority('user:writer')")
     public ResponseEntity<CommonResponse> dislikePost(@RequestBody VoteRequest request) {
-        //TODO:replace to User from SecurityContext
-        User user = new User();
-        user.setId(1L);
-        return postService.savePostVote(request.getPostId(), user, -1);
+        return postService.savePostVote(request.getPostId(), -1);
     }
 }

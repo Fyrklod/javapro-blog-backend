@@ -13,9 +13,8 @@ public class UserMapper {
                 //.setRemovePhoto(0)
                 .setEmail(user.getEmail())
                 .setModeration(user.isModerator())
-                //TODO:откуда?
-                //.setModerationCount(0)
-                //TODO:откуда?
-                .setSettings(false);
+                //TODO: связать DTO с Service
+                .setModerationCount(0L)
+                .setSettings(user.isModerator());
     }
 }

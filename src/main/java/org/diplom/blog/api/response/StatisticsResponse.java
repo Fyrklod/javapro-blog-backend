@@ -1,13 +1,15 @@
 package org.diplom.blog.api.response;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-@Getter
+/*@Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor*/
+@Data
 @Accessors(chain = true)
 public class StatisticsResponse {
     private long postsCount;
