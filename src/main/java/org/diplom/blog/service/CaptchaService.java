@@ -12,6 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
@@ -68,9 +74,11 @@ public class CaptchaService {
         return false;
     }
 
-    private String captchaGenerate(String captchaCode) {
+    @SneakyThrows
+    private String captchaGenerate(String captchaCode)  {
         Cage cage = new GCage();
-        byte[] bytes = cage.draw(captchaCode);//cage.getTokenGenerator().next()
+        BufferedImage bufferedImage = cage.drawImage(captchaCode);
+        byte[] bytes = imageResize(bufferedImage, 100, 35);//cage.draw(captchaCode);//cage.getTokenGenerator().next()
         return Base64Utils.encodeToString(bytes);
     }
 
@@ -91,5 +99,27 @@ public class CaptchaService {
     private synchronized void clearOldCaptcha() {
         LocalDateTime localDateTime = LocalDateTime.now().minusHours(HOURS_FOR_EXPIRE);
         captchaRepository.deleteByTimeLessThan(localDateTime);
+    }
+
+    @SneakyThrows
+    private byte[] imageResize(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        if(targetHeight <= 0 || targetWidth <= 0){
+            throw new Exception("Одна из сторон изображения 0 или меньше");
+        }
+        byte[] imageInByte = null;
+        BufferedImage resizedImage = new BufferedImage(
+                targetWidth, targetHeight, originalImage.getType()
+        );
+        Graphics2D graphics2D = resizedImage.createGraphics();
+        graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+        graphics2D.dispose();
+
+        try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ImageIO.write(resizedImage, "jpg", outputStream);
+            outputStream.flush();
+            imageInByte = outputStream.toByteArray();
+        }
+
+        return imageInByte;
     }
 }

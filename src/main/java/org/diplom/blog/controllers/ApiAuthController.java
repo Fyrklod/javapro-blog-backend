@@ -32,10 +32,10 @@ public class ApiAuthController {
         return userService.login(request);
     }
 
-    /*@GetMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<CommonResponse> logout() {
         return userService.logout();
-    }*/
+    }
 
     @GetMapping("/check")
     public ResponseEntity<UserResponse> check() {

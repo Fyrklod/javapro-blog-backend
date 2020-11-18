@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -40,6 +41,7 @@ public class UserService {
 
     @Value("${blog.info.title}")
     private String siteTitle;
+    private final ConcurrentHashMap userSessionMap;
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -61,6 +63,7 @@ public class UserService {
         this.postRepository = postRepository;
         this.mailSenderService = mailSenderService;
         this.authenticationManager = authenticationManager;
+        this.userSessionMap = new ConcurrentHashMap();
     }
 
     public ResponseEntity<UserResponse> login(UserRequest request) {
@@ -73,6 +76,7 @@ public class UserService {
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
         User currentUser = (User)auth.getPrincipal();
+        //userSessionMap.put("SESSION", currentUser.getId());///?????
         return ResponseEntity.ok(prepareUserResponse(currentUser));
     }
 
@@ -80,6 +84,7 @@ public class UserService {
         SecurityContextHolder.clearContext();
 
         CommonResponse response = new CommonResponse();
+        response.setResult(true);
         return ResponseEntity.ok(response);
     }
 

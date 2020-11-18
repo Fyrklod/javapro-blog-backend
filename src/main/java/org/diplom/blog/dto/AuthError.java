@@ -5,7 +5,7 @@ import lombok.Builder;
 
 @Builder
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class AuthError {
+public class AuthError extends AbstractError {
     private final String email;
     private final String photo;
     private final String name;

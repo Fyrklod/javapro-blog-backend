@@ -14,11 +14,21 @@ import org.diplom.blog.repository.PostRepository;
 import org.diplom.blog.repository.SettingsRepository;
 import org.diplom.blog.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.ModelMap;
+import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -32,6 +42,11 @@ import java.util.regex.Pattern;
  */
 @Service
 public class GeneralService {
+
+    @Value("${file-storage.relative-path}")
+    private String uploadPath;
+    @Value("${file-storage.depth}")
+    private int depthStorage;
 
     private final UserService userService;
     private final PostRepository postRepository;
@@ -82,9 +97,34 @@ public class GeneralService {
     }
 
     //TODO: доработать
-    public ResponseEntity<String> addImage(String contentType, String upload){
-        String path = "";
-        return ResponseEntity.ok(path);
+    public ResponseEntity<String> addImage(MultipartFile upload) {
+        if(upload != null && upload.isEmpty()){
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        String retPath = "";//""/upload/cd/ef/ef/8449541f-138b-4947-b4bc-252c6960e44f_Apache-camel-logo.png";
+        File uploadFolder = new File(uploadPath);
+
+        try {
+            String genericUploadDir = generateStorageFolderPath();
+            Path absoluteUploadPath = Paths.get(genericUploadDir).toAbsolutePath();
+
+            if (!Files.exists(absoluteUploadPath)) {
+                Files.createDirectories(absoluteUploadPath);
+            }
+
+            Path uploadFilePath = Paths.get(absoluteUploadPath + "/" + UUID.randomUUID().toString() + "_" + upload.getOriginalFilename())
+                    .toAbsolutePath();
+
+            upload.transferTo(uploadFilePath);
+            retPath = "\\" + uploadFolder.toPath().getParent().toAbsolutePath()
+                                  .relativize(uploadFilePath).toString();
+
+        } catch(IOException ex) {
+            //TODO:доработать ошибку
+            return ResponseEntity.badRequest().body(null);
+        }
+        return ResponseEntity.ok(retPath);
     }
 
     public ResponseEntity<CalendarResponse> getCalendar(String year) {
@@ -178,5 +218,22 @@ public class GeneralService {
         return settingsRepository.findByCode(settingCode)
                 .orElseThrow(() -> new Exception(String.format("В базе отсутствует настройка с кодом %s"
                         , settingCode)));
+    }
+
+    private String generateStorageFolderPath(){
+        //TODO: заменить этот массив
+        String[] folderName = {"ab", "cd", "ef"};
+
+        int maxRang = folderName.length;
+
+        StringBuilder pathBuilder = new StringBuilder(uploadPath).append("/");
+        for(int i=0; i<depthStorage; i++){
+            int randomIndex = new Random().nextInt(maxRang);
+
+            String subFolder = randomIndex >= folderName.length ? folderName[folderName.length] : folderName[randomIndex];
+            pathBuilder.append(subFolder).append("/");
+        }
+
+        return pathBuilder.toString();
     }
 }

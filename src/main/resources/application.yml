@@ -21,6 +21,10 @@ mail:
 server:
   port: ${PORT:9090}
 
+file-storage:
+  relative-path: src\main\resources\static\upload
+  depth: 3
+
 #JWT Configuration
 security:
   jwt:

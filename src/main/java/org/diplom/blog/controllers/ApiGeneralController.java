@@ -14,7 +14,9 @@ import org.diplom.blog.service.TagService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
@@ -30,11 +32,10 @@ public class ApiGeneralController {
         return initService.getInit();
     }
 
-    //TODO: доработать
     @PostMapping("/api/image")
     @PreAuthorize("hasAuthority('user:writer')")
-    public ResponseEntity<String> addImage(@RequestHeader("Content-Type") String contentType, String upload) {
-        return generalService.addImage(contentType, upload);
+    public ResponseEntity<String> addImage(@RequestParam MultipartFile image) {
+        return generalService.addImage(image);
     }
 
     //TODO: доработать вместе с репозиторием
