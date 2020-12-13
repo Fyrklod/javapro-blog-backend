@@ -5,19 +5,13 @@ import org.diplom.blog.api.request.AuthRequest;
 import org.diplom.blog.api.request.RecoveryRequest;
 import org.diplom.blog.api.request.UserRequest;
 import org.diplom.blog.api.response.*;
-import org.diplom.blog.dto.mapper.UserMapper;
-import org.diplom.blog.model.User;
 import org.diplom.blog.service.CaptchaService;
 import org.diplom.blog.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,8 +27,9 @@ public class ApiAuthController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<CommonResponse> logout() {
-        return userService.logout();
+    public ResponseEntity<SimpleResponse> logout(HttpServletRequest httpRequest,
+                                                 HttpServletResponse httpResponse) {
+        return userService.logout(httpRequest, httpResponse);
     }
 
     @GetMapping("/check")
@@ -43,7 +38,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/restore")
-    public ResponseEntity<CommonResponse> restore(@RequestBody RecoveryRequest request) {
+    public ResponseEntity<SimpleResponse> restore(@RequestBody RecoveryRequest request) {
         return userService.restore(request);
     }
 

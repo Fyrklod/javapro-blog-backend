@@ -7,10 +7,11 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-@NoArgsConstructor
+/*@NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
+@Setter*/
+@Data
 public class Tag4PostKey implements Serializable {
     @Column(name="post_id")
     private Long postId;

@@ -10,7 +10,7 @@ public enum ModerationStatus {
     ACCEPTED("accepted"),
     DECLINED("declined");
 
-    private String status;
+    private final String status;
 
     private ModerationStatus(String status){
         this.status = status;

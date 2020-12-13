@@ -13,6 +13,7 @@ import java.util.Date;
  * @author Andrey.Kazakov
  * @date 24.09.2020
  */
+@Deprecated
 @Data
 public class BlogUserDetails implements UserDetails {
 

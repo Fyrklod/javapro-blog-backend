@@ -13,16 +13,22 @@ spring:
     host: smtp.gmail.com
     port: 465
     username: JavaESBBlog@gmail.com
-    password: Blog!23$567
+    password: Blog!23$567New
 
 mail:
   debug: true
+  smtp:
+    auth: true
+    starttls:
+      enable: true
 
 server:
   port: ${PORT:9090}
 
 file-storage:
-  relative-path: src\main\resources\static\upload
+  relative-path:
+    post: upload
+    avatar: avatar
   depth: 3
 
 #JWT Configuration
@@ -36,11 +42,12 @@ security:
     password-level-security: 12
 
 blog:
+  url: ${BLOGURL:http://localhost:9090}
   info:
     title: Блог интеграции
     subtitle: Общая информация
     copyright: Андрей Казаков
     copyrightFrom: 2020
     contact:
-      phone: +7 903 666-44-55
-      email: mail@mail.ru
+      phone: +7 921 365-44-06
+      email: fyrklod@gmail.ru

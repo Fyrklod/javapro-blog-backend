@@ -1,10 +1,5 @@
 package org.diplom.blog.security;
 
-import lombok.extern.slf4j.Slf4j;
-import org.diplom.blog.model.User;
-import org.diplom.blog.repository.UserRepository;
-
-//import org.springframework.security.core.userdetails.User;
 import org.diplom.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +23,6 @@ public class BlogUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userService.getUserByEmail(email);
-        return user;//BlogUserDetails.fromUser(user);
+        return userService.getUserByEmail(email);
     }
 }

@@ -1,20 +1,33 @@
 package org.diplom.blog.dto.mapper;
 
-import org.diplom.blog.dto.UserDto;
+import org.diplom.blog.dto.UserInfo;
 import org.diplom.blog.model.User;
 
 public class UserMapper {
-    public static UserDto toUserDto(User user) {
-        return new UserDto()
-                .setId(user.getId())
-                .setName(user.getFullName())
-                .setPhoto(user.getPhoto())
-                //TODO:откуда?
-                //.setRemovePhoto(0)
-                .setEmail(user.getEmail())
-                .setModeration(user.isModerator())
-                //TODO: связать DTO с Service
-                .setModerationCount(0L)
-                .setSettings(user.isModerator());
+    public static UserInfo toUserFullInfo(User user) {
+        return UserInfo.builder()
+                .id(user.getId())
+                .name(user.getFullName())
+                .photo(user.getPhoto())
+                .email(user.getEmail())
+                .moderation(user.isModerator())
+                .moderationCount(0L)
+                .settings(user.isModerator())
+                .build();
+    }
+
+    public static UserInfo toUserExtInfo(User user) {
+        return UserInfo.builder()
+                .id(user.getId())
+                .name(user.getFullName())
+                .photo(user.getPhoto())
+                .build();
+    }
+
+    public static UserInfo toUserBasicInfo(User user) {
+        return UserInfo.builder()
+                .id(user.getId())
+                .name(user.getFullName())
+                .build();
     }
 }

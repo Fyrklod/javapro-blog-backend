@@ -26,10 +26,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByModerationStatusValueAndIsActiveAndDateLessThanEqual(String moderationStatusValue, boolean isActive,
                                                                           LocalDateTime date, Pageable pageable);
 
-    Page<Post> findByModerationStatusValueAndIsActiveAndDate(String moderationStatusValue, boolean isActive,
-                                                             LocalDate date, Pageable pageable);
-
     Page<Post> findByModeratorAndIsActive(User moderator, boolean isActive, Pageable pageable);
+    Page<Post> findByModeratorAndModerationStatusValueAndIsActive(User moderator, String moderationStatus
+                                                                    , boolean isActive, Pageable pageable);
     Page<Post> findByModerationStatusValueAndIsActive(String moderationStatus, boolean isActive,
                                                       Pageable pageable);
 
@@ -97,23 +96,23 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                      Pageable pageable);
 
     @Query(value = "SELECT distinct EXTRACT(YEAR FROM time) as YYYY" +
-                   " FROM posts", nativeQuery = true)
-    List<Integer> getDistinctYearAllPosts();
-
-   /* @Query(value = "SELECT new org.diplom.blog.dto.EntityCount(p.date as dayPublication" +
-                    "                                          , COUNT(1) as postsCount)" +
-                    " FROM Post p" +
-                    " GROUP BY dayPublication" +
-                    " ORDER BY dayPublication")
-    List<EntityCount<LocalDate>> getCountPostInDayOfYear(@Param("year") Integer year);*/
+                   " FROM posts " +
+                   " WHERE moderation_status=:moderationStatus " +
+                   "       and is_active=:isActive ", nativeQuery = true)
+    List<Integer> getDistinctYearAllPosts(@Param("moderationStatus") String moderationStatusValue,
+                                          @Param("isActive") boolean isActive);
 
     @Query(value = "SELECT text(date(time)) as dayPublication" +
                     ",   count(1) as postsCount" +
                     " FROM posts" +
                     " WHERE EXTRACT(YEAR FROM time)=:year " +
+                    "       and moderation_status=:moderationStatus " +
+                    "       and is_active=:isActive " +
                     " GROUP BY dayPublication" +
                     " ORDER BY dayPublication", nativeQuery = true)
-    List<Object[]> getCountPostInDayOfYear(@Param("year") Integer year);
+    List<Object[]> getCountPostInDayOfYear(@Param("year") Integer year,
+                                           @Param("moderationStatus") String moderationStatusValue,
+                                           @Param("isActive") boolean isActive);
 
     @Query(value =  "SELECT count(id) as postsCount, " +
             "           sum(view_count) as viewsCount, " +

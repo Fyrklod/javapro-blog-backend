@@ -1,15 +1,25 @@
 package org.diplom.blog.api.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sun.istack.Nullable;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.diplom.blog.dto.UserDto;
+import org.diplom.blog.dto.UserInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResponse extends CommonResponse {
-    private UserDto user;
+public class UserResponse extends SimpleResponse {
+    private final UserInfo user;
+
+    public UserResponse() {
+        this(null, false);
+    }
+
+    public UserResponse(UserInfo user) {
+        this(user, true);
+    }
+
+    public UserResponse(@Nullable UserInfo user, boolean result) {
+        super(result);
+        this.user = user;
+    }
 }

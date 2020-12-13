@@ -1,6 +1,5 @@
 package org.diplom.blog.service;
 
-import lombok.AllArgsConstructor;
 import org.diplom.blog.api.response.InitResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

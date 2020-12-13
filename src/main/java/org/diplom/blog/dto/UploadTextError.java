@@ -5,7 +5,7 @@ import lombok.*;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Error {
+public class UploadTextError extends AbstractError{
     private String title;
     private String text;
 }

@@ -1,6 +1,5 @@
 package org.diplom.blog.service;
 
-import lombok.AllArgsConstructor;
 import org.diplom.blog.dto.EntityCount;
 import org.diplom.blog.dto.TagDto;
 import org.diplom.blog.dto.mapper.TagMapper;

@@ -1,19 +1,14 @@
 package org.diplom.blog.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.Accessors;
+import lombok.*;
 
-@Getter
-@Setter
-@Accessors(chain = true)
-@NoArgsConstructor
+@Data
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentDto {
-    private Long id;
-    private long timestamp;
-    private String text;
-    private UserDto user;
+    private final Long id;
+    private final long timestamp;
+    private final String text;
+    private final UserInfo user;
 }

@@ -11,7 +11,7 @@ public enum Decision {
     @JsonProperty("accept")
     ACCEPT("accept");
 
-    private String decision;
+    private final String decision;
 
     private Decision(String decision){
         this.decision = decision;

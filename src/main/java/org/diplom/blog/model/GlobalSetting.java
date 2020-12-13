@@ -1,14 +1,16 @@
 package org.diplom.blog.model;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
 
-@Getter
+/*@Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor*/
+@Data
 @Entity
 @Table(name = "global_settings")
 public class GlobalSetting {

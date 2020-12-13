@@ -3,18 +3,14 @@ package org.diplom.blog.controllers;
 import lombok.AllArgsConstructor;
 import org.diplom.blog.api.request.CommentRequest;
 import org.diplom.blog.api.request.ModerationRequest;
+import org.diplom.blog.api.request.ProfileRequest;
 import org.diplom.blog.dto.SettingsDto;
 import org.diplom.blog.api.response.StatisticsResponse;
-import org.diplom.blog.dto.UserDto;
 import org.diplom.blog.api.response.*;
-import org.diplom.blog.service.CommentService;
-import org.diplom.blog.service.GeneralService;
-import org.diplom.blog.service.InitService;
-import org.diplom.blog.service.TagService;
+import org.diplom.blog.service.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,8 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class ApiGeneralController {
 
     private final InitService initService;
+    private final UserService userService;
     private final GeneralService generalService;
     private final CommentService commentService;
+    private final SettingService settingService;
     private final TagService tagService;
 
     @GetMapping("/api/init")
@@ -38,7 +36,6 @@ public class ApiGeneralController {
         return generalService.addImage(image);
     }
 
-    //TODO: доработать вместе с репозиторием
     @PostMapping("/api/comment")
     @PreAuthorize("hasAuthority('user:writer')")
     public ResponseEntity<CommentResponse> addComment(@RequestBody CommentRequest comment) {
@@ -52,7 +49,7 @@ public class ApiGeneralController {
 
     @PostMapping("/api/moderation")
     @PreAuthorize("hasAuthority('user:approver')")
-    public ResponseEntity<CommonResponse> moderation(@RequestBody ModerationRequest request) {
+    public ResponseEntity<SimpleResponse> moderation(@RequestBody ModerationRequest request) {
         return generalService.moderationPost(request);
     }
 
@@ -61,35 +58,45 @@ public class ApiGeneralController {
         return generalService.getCalendar(year);
     }
 
-    //TODO: доработать вместе с репозиторием
-    @PostMapping(value = "/api/profile/my", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/api/profile/my",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('user:writer')")
-    public ResponseEntity<AuthResponse> profile(@RequestHeader("Content-Type") String contentType,
-                                                @RequestBody UserDto profile) {
+    public ResponseEntity<ProfileResponse> profile(@RequestPart(name = "photo", required = false) MultipartFile photo,
+                                                @RequestParam(required = false) String name,
+                                                @RequestParam(required = false) String email,
+                                                @RequestParam(required = false) String password,
+                                                @RequestParam(required = false) int removePhoto) {
 
-        return generalService.profile(contentType, profile);
+        return userService.profile(photo, name, email, password, removePhoto);
+    }
+
+    @PostMapping(value = "/api/profile/my", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAuthority('user:writer')")
+    public ResponseEntity<ProfileResponse> profile(@RequestBody ProfileRequest profileRequest) {
+        return userService.profile(profileRequest);
     }
 
     @GetMapping("/api/statistics/my")
     @PreAuthorize("hasAuthority('user:writer')")
     public ResponseEntity<StatisticsResponse> getMyStatistics() {
-        return generalService.getMyStatistics();
+        return settingService.getMyStatistics();
     }
 
 
     @GetMapping("/api/statistics/all")
     public ResponseEntity<StatisticsResponse> getAllStatistics() {
-        return generalService.getAllStatistics();
+        return settingService.getAllStatistics();
     }
 
     @GetMapping("/api/settings")
     public ResponseEntity<SettingsDto> getSettings() {
-        return generalService.getGlobalSettings();
+        return settingService.getGlobalSettings();
     }
 
     @PutMapping("/api/settings")
     @PreAuthorize("hasAuthority('user:approver')")
     public void modSettings(@RequestBody SettingsDto settings) throws Exception {
-        generalService.setGlobalSettings(settings);
+        settingService.setGlobalSettings(settings);
     }
 }

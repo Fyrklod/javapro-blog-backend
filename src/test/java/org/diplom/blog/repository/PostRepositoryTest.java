@@ -1,5 +1,6 @@
 package org.diplom.blog.repository;
 
+import org.diplom.blog.model.ModerationStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,9 @@ public class PostRepositoryTest {
 
     @Test
     public void getCountPostInDayOfYear() {
-        List<Object[]> info = postRepository.getCountPostInDayOfYear(2020);
+        List<Object[]> info = postRepository.getCountPostInDayOfYear(2020
+                                                        , ModerationStatus.ACCEPTED.toString(),
+                                                        true);
         Object[] obj = info.get(0);
         String year = (String)obj[0];
         long count =((BigInteger)obj[1]).longValue();

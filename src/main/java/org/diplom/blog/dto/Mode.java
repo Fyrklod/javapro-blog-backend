@@ -10,7 +10,7 @@ public enum Mode {
     BEST("best"),
     EARLY("early");
 
-    private String mode;
+    private final String mode;
 
     private Mode(String mode){
         this.mode = mode;

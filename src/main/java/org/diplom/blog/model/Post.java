@@ -2,6 +2,7 @@ package org.diplom.blog.model;
 
 import lombok.*;
 import lombok.experimental.Accessors;
+import net.bytebuddy.implementation.bind.annotation.Argument;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.util.StringUtils;
 
@@ -9,12 +10,11 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
-@Getter
-@Setter
-@Accessors(chain = true)
-@AllArgsConstructor
+@Data
 @Entity
+@Accessors(chain = true)
+//@Builder
+//@AllArgsConstructor
 @Table(name = "Posts")
 public class Post {
     @Id

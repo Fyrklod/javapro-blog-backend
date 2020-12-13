@@ -10,8 +10,12 @@ import java.lang.reflect.Field;
  * @author Andrey.Kazakov
  * @date 25.10.2020
  */
-@Data
-public class AuthException extends Exception{
+public class AuthException extends AbstractErrorException {
+    public AuthException(AuthError errors) {
+        super(errors);
+    }
+}
+/*public class AuthException extends Exception {
     private final AuthError errors;
 
     public AuthException(AuthError errors) {
@@ -32,4 +36,4 @@ public class AuthException extends Exception{
 
         return authErrorString.toString();
     }
-}
+}*/

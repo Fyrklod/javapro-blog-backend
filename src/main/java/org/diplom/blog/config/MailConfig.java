@@ -32,6 +32,12 @@ public class MailConfig {
     @Value("${mail.debug}")
     private String debug;
 
+    @Value("${mail.smtp.starttls.enable}")
+    private String ttlEnable;
+
+    @Value("${mail.smtp.auth}")
+    private String isAuth;
+
     @Bean
     public JavaMailSender getMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
@@ -43,6 +49,8 @@ public class MailConfig {
         mailSender.setProtocol(protocol);
 
         Properties prop = mailSender.getJavaMailProperties();
+        prop.setProperty("mail.smtp.auth", isAuth);
+        prop.setProperty("mail.smtp.starttls.enable", ttlEnable);
         prop.setProperty("mail.debug", debug);
 
         return mailSender;

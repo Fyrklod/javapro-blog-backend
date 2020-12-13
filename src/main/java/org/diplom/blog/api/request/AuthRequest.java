@@ -2,21 +2,23 @@ package org.diplom.blog.api.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
+/*@Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor*/
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthRequest {
     @JsonProperty("e_mail")
-    private String email;
-    private String code;
-    private String password;
-    private String name;
-    private String captcha;
+    private final String email;
+    private final String code;
+    private final String password;
+    private final String name;
+    private final String captcha;
     @JsonProperty("captcha_secret")
-    private String captchaSecret;
+    private final String captchaSecret;
 }

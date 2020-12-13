@@ -1,9 +1,6 @@
 package org.diplom.blog.repository;
 
-import org.diplom.blog.model.Post;
 import org.diplom.blog.model.PostVote;
-import org.diplom.blog.model.User;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

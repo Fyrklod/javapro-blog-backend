@@ -1,16 +1,12 @@
 package org.diplom.blog.controllers;
 
 import lombok.AllArgsConstructor;
+import org.diplom.blog.api.response.*;
 import org.diplom.blog.dto.Mode;
-import org.diplom.blog.api.response.PostResponse;
 import org.diplom.blog.dto.PostStatus;
 import org.diplom.blog.api.request.PostRequest;
 import org.diplom.blog.api.request.VoteRequest;
-import org.diplom.blog.api.response.CommonResponse;
-import org.diplom.blog.api.response.PostListResponse;
-import org.diplom.blog.api.response.UploadResponse;
 import org.diplom.blog.model.ModerationStatus;
-import org.diplom.blog.model.User;
 import org.diplom.blog.service.PostService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
-import java.security.Principal;
 import java.time.LocalDate;
 
 @RestController
@@ -93,7 +88,7 @@ public class ApiPostController {
         return postService.getPostById(id);
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     @PreAuthorize("hasAuthority('user:writer')")
     public ResponseEntity<UploadResponse> addPost(@RequestBody PostRequest request) throws Exception {
         return  postService.addPost(request);
@@ -108,13 +103,13 @@ public class ApiPostController {
 
     @PostMapping("/like")
     @PreAuthorize("hasAuthority('user:writer')")
-    public ResponseEntity<CommonResponse> likePost(@RequestBody VoteRequest request) {
+    public ResponseEntity<SimpleResponse> likePost(@RequestBody VoteRequest request) {
         return postService.savePostVote(request.getPostId(), 1);
     }
 
     @PostMapping("/dislike")
     @PreAuthorize("hasAuthority('user:writer')")
-    public ResponseEntity<CommonResponse> dislikePost(@RequestBody VoteRequest request) {
+    public ResponseEntity<SimpleResponse> dislikePost(@RequestBody VoteRequest request) {
         return postService.savePostVote(request.getPostId(), -1);
     }
 }

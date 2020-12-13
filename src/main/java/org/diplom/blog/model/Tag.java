@@ -1,13 +1,15 @@
 package org.diplom.blog.model;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
 
-@Getter
+@Data
 @Entity
+@NoArgsConstructor
 @Table(name = "tags")
 public class Tag {
     @Id
@@ -17,7 +19,7 @@ public class Tag {
     @Column(name = "name", nullable = false)
     private String name;
 
-    public Tag(){}
+    /*public Tag(){}*/
 
     public Tag(String name){
         this.name=name;

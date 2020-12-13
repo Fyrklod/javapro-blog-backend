@@ -3,7 +3,10 @@ package org.diplom.blog.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.UUID;
 
 /**
  * @author Andrey.Kazakov
@@ -11,6 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
  */
 @SpringBootTest
 public class MailSenderTest {
+
+    @Value("${blog.url}")
+    private String blogUrl;
 
     @Autowired
     private MailSenderService mailSender;
@@ -24,7 +30,18 @@ public class MailSenderTest {
     public void mailSendTest()  {
         Exception verifiableError = null;
         try {
-            mailSender.send("fyrklod@gmail.com", "testMail", "Hello, <b>group!</b>");//test-sd1bkelkj@srv1.mail-tester.com
+            String urlForRestore = String.format("%s/login/change-password/%s",
+                    blogUrl, UUID.randomUUID());
+
+            String letterText = String.format("Добрый день, %s\n" +
+                    "\n" +
+                    "Вы запросили восстановление пароля на нашем сайте. Для продолжения пройдите по адресу:\n" +
+                    "<a href=\"%s\">%s</a>\n" +
+                    "С уважением,\n" +
+                    "Команда \"%s\"", "user.getFullName()", urlForRestore, urlForRestore, "siteTitle");
+
+
+            mailSender.send("fyrklod@gmail.com", "testMail", letterText);
         } catch (Exception ex){
             ex.printStackTrace();
             verifiableError = ex;

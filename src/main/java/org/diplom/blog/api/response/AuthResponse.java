@@ -1,14 +1,13 @@
 package org.diplom.blog.api.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import org.diplom.blog.dto.AuthError;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-@Getter
+//@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AuthResponse extends CommonResponse {
-    private AuthError errors;
+public class AuthResponse extends CommonResponse<AuthError> {
 
     @Builder
     public AuthResponse(boolean result){
@@ -17,7 +16,6 @@ public class AuthResponse extends CommonResponse {
 
     @Builder
     public AuthResponse(boolean result, AuthError errors){
-        this(result);
-        this.errors = errors;
+        super(result, errors);
     }
 }

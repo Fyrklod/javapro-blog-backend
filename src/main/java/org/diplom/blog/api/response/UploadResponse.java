@@ -1,17 +1,14 @@
 package org.diplom.blog.api.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import org.diplom.blog.dto.Error;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.diplom.blog.dto.UploadTextError;
 
-@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UploadResponse extends CommonResponse {
-    private final Error errors;
+public class UploadResponse extends CommonResponse<UploadTextError> {
 
     @Builder
-    public UploadResponse(boolean result, Error errors){
-        super(result);
-        this.errors = errors;
+    public UploadResponse(boolean result, UploadTextError errors){
+        super(result, errors);
     }
 }

@@ -1,18 +1,17 @@
 package org.diplom.blog.api.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
+/*@Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor*/
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostRequest {
-    private long timestamp;
-    private boolean active;
-    private String title;
-    private String[] tags;
-    private String text;
+    private final long timestamp;
+    private final boolean active;
+    private final String title;
+    private final String[] tags;
+    private final String text;
 }

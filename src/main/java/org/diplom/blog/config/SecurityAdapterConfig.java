@@ -1,8 +1,5 @@
 package org.diplom.blog.config;
 
-import org.diplom.blog.security.SecurityConstant;
-import org.diplom.blog.security.jwt.JwtTokenVerifier;
-import org.diplom.blog.security.jwt.JwtUsernamePasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -46,18 +43,17 @@ public class SecurityAdapterConfig extends WebSecurityConfigurerAdapter {
             //    .addFilterAfter(new JwtTokenVerifier(), JwtUsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
             .antMatchers("/**").permitAll()
+
             .anyRequest()
             .authenticated()
             .and()
             .formLogin().disable()
             .httpBasic().disable()
-            //.and()
-            .logout()//
-                //.logoutUrl("/api/auth/logout")
-                //.logoutSuccessUrl("/login?logout")
+            .logout()
                 .clearAuthentication(true)
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID");
+                .deleteCookies("JSESSIONID")
+                .permitAll();
     }
 
     @Override

@@ -1,9 +1,8 @@
 package org.diplom.blog.service;
 
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.diplom.blog.api.response.*;
-import org.diplom.blog.dto.Error;
+import org.diplom.blog.dto.UploadTextError;
 import org.diplom.blog.dto.Mode;
 import org.diplom.blog.dto.PostStatus;
 import org.diplom.blog.dto.mapper.PostMapper;
@@ -38,19 +37,19 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostVoteRepository postVoteRepository;
     private final TagService tagService;
-    private final GeneralService generalService;
+    private final SettingService settingService;
     private final UserService userService;
 
     @Autowired
     public PostService(PostRepository postRepository,
                        PostVoteRepository postVoteRepository,
                        TagService tagService,
-                       GeneralService generalService,
+                       SettingService settingService,
                        UserService userService) {
         this.postRepository = postRepository;
         this.postVoteRepository = postVoteRepository;
         this.tagService = tagService;
-        this.generalService = generalService;
+        this.settingService = settingService;
         this.userService = userService;
     }
 
@@ -61,33 +60,23 @@ public class PostService {
         // если пост активен (параметр is_active в базе данных равен 1),
         // принят модератором (параметр moderation_status равен ACCEPTED)
         // и время его публикации (поле timestamp) равно текущему времени или меньше его формата UTC.
-        Optional<Post> optionalPost = postRepository.findByIdAndModerationStatusValueAndIsActiveAndDateLessThanEqual(id,
-                ModerationStatus.ACCEPTED.toString(),
-                true,
-                LocalDateTime.now());
+        Optional<Post> optionalPost = postRepository.findById(id);
 
-        if(optionalPost.isEmpty()){
+        if(optionalPost.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Post post = optionalPost.get();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            User reader = (User) authentication.getPrincipal();
-
-            if(!reader.isModerator() && !reader.equals(post.getAuthor())) {
-                post.viewPost();
-                postRepository.save(post);
-            }
+        if(!tryToSeePost(post)) {
+            return ResponseEntity.notFound().build();
         }
 
-        PostResponse response = PostMapper.toPostResponse(post);
+        PostResponse response = PostMapper.toSinglePostResponse(post);
         return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<PostListResponse> getPosts(int offset, int limit, Mode mode) {
-        Page<Post> pages = null;
+        Page<Post> pages;
 
         try {
             switch (mode) {
@@ -176,8 +165,8 @@ public class PostService {
             Page<Post> pages = status.equals(ModerationStatus.NEW)
                            ? postRepository.findByModerationStatusValueAndIsActive(status.toString(),
                                                                              true, pageable)
-                           : postRepository.findByModeratorAndIsActive(currentUser, true, pageable);
-
+                           : postRepository.findByModeratorAndModerationStatusValueAndIsActive(currentUser
+                                                                            , status.toString(), true, pageable);
             return preparePostsResponse(pages);
 
         } catch (Exception ex){
@@ -208,11 +197,11 @@ public class PostService {
         return savePost(id, request);
     }
 
-    public ResponseEntity<CommonResponse> savePostVote(Long postId, int value) {
+    public ResponseEntity<SimpleResponse> savePostVote(Long postId, int value) {
         User user = userService.getCurrentUser();
-        CommonResponse response = new CommonResponse();
+
         boolean result = true;
-        PostVote postVote = null;
+        PostVote postVote;
 
         try {
             Optional<PostVote> optionalPostVote =  postVoteRepository.findByPostIdAndUserId(postId, user.getId());
@@ -220,8 +209,7 @@ public class PostService {
             {
                 postVote = optionalPostVote.get();
                 if(postVote.getValue().equals(value)){
-                    response.setResult(false);
-                    return ResponseEntity.ok(response);
+                    return ResponseEntity.ok(new SimpleResponse(false));
                 } else {
                     postVote.setValue(value);
                 }
@@ -235,51 +223,54 @@ public class PostService {
             result = false;
         }
 
-        response.setResult(result);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new SimpleResponse(result));
     }
 
-    //TODO: статус поста при отключенной настройки ПРЕМОДЕРАЦИЯ и если это черновик ?
     @Transactional
     private ResponseEntity<UploadResponse> savePost(Long id, PostRequest request) throws Exception {
         UploadResponse response;
-        Boolean postPremoderation = generalService.getBooleanSettingValueByCode("POST_PREMODERATION");
-        User author = userService.getCurrentUser();
+        Boolean postPremoderation = settingService.getBooleanSettingValueByCode("POST_PREMODERATION");
 
         if(request.getTitle().length() > 3 && request.getText().length() > 50){
             List<Tag> tags = tagService.saveTagByListName(Arrays.asList(request.getTags()));
             LocalDateTime postDateTime = DateUtil.getLocalDateTimeFromTimestamp(request.getTimestamp());
 
-            Post post = ( id > 0 )
-                            ? postRepository.getOne(id)
-                            : new Post();
+            Post post = ( id > 0 ) ? postRepository.getOne(id)
+                                   : new Post();
+            User currentUser = userService.getCurrentUser();
+/*            User author = ( id > 0 ) ? post.getAuthor()
+                                     : currentUser;*/
+
+            if(id == 0 ) {
+                post.setViewCount(0);
+                post.setAuthor(currentUser);
+            }
 
             post.setTitle(request.getTitle())
-                    .setText(request.getText())
-                    .setAuthor(author)
-                    .setTags(tags)
-                    .setActive(request.isActive())
-                    .setDate(
-                            postDateTime.compareTo(LocalDateTime.now()) > 0
-                                    ? LocalDateTime.now()
-                                    : postDateTime
-                    )
-                    .setModerationStatus(
-                            //EСЛИ настройка ПРЕМОДЕРАЦИЯ включена, тогда все статусы NEW
-                            //ИНАЧЕ ACCEPT (тут есть "НО", доп условие "если у них установлен параметр active = 1")
-                            //??? если у них установлен параметр active = 0 то какой устанавливать статус???
-                            postPremoderation
-                                ? ModerationStatus.NEW
-                                : ModerationStatus.ACCEPTED
-                    )
-                    .setViewCount(0);
+                .setText(request.getText())
+                .setTags(tags)
+                .setActive(request.isActive())
+                .setDate(
+                       postDateTime.isBefore(LocalDateTime.now())
+                                ? postDateTime
+                                : LocalDateTime.now()
+                )
+                .setModerationStatusValue(
+                        currentUser.equals(post.getAuthor())            //Если добавляет или изменяет автор
+                                ? postPremoderation                     //  и включен режим премодерации
+                                    ? ModerationStatus.NEW.toString()              //      устанавливается статус NEW
+                                    : ModerationStatus.ACCEPTED.toString()         //      иначе ACCEPTED
+                                :  post.getModerationStatusValue()           //Иначе (Если изменения сделал модератор)
+                                                                        //      статус остается прежним
+                );
 
             postRepository.save(post);
 
             response = UploadResponse.builder()
-                                    .result(true).build();
+                                     .result(true)
+                                     .build();
         } else {
-            Error error = new Error();
+            UploadTextError error = new UploadTextError();
             if(request.getTitle().length() <= 3){
                 error.setTitle("Заголовок не установлен");
             }
@@ -301,8 +292,8 @@ public class PostService {
             Long totalPost = pages.getTotalElements();
             List<Post> posts = pages.getContent();
 
-            List<PostResponse> postResponseList = posts.parallelStream()
-                    .map(PostMapper::toPostResponse)
+            List<PostResponse> postResponseList = posts.stream()
+                    .map(PostMapper::toPostForListResponse)
                     .collect(Collectors.toList());
 
             PostListResponse response = PostListResponse.builder()
@@ -328,7 +319,8 @@ public class PostService {
     private Page<Post> getAllPopularPost(int pageIndex, int pageSize){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
 
-        return postRepository.findAllWithCountOfCommentsOrderByCountDesc(ModerationStatus.ACCEPTED.toString(),
+        return postRepository.findAllWithCountOfCommentsOrderByCountDesc(
+                ModerationStatus.ACCEPTED.toString(),
                 true,
                 LocalDateTime.now(),
                 pageable
@@ -337,7 +329,8 @@ public class PostService {
 
     private Page<Post> getAllBestPost(int pageIndex, int pageSize){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
-        return postRepository.findAllWithCountOfVotesOrderByCountDesc(ModerationStatus.ACCEPTED.toString(),
+        return postRepository.findAllWithCountOfVotesOrderByCountDesc(
+                ModerationStatus.ACCEPTED.toString(),
                 true,
                 LocalDateTime.now(),
                 pageable
@@ -347,7 +340,47 @@ public class PostService {
     private Page<Post> getAllPostOrderedByDate(int pageIndex, int pageSize, Sort.Direction sort){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize, sort, "date");
 
-        return postRepository.findByModerationStatusValueAndIsActiveAndDateLessThanEqual(ModerationStatus.ACCEPTED.toString(), true,  LocalDateTime.now(), pageable);
+        return postRepository.findByModerationStatusValueAndIsActiveAndDateLessThanEqual(
+                ModerationStatus.ACCEPTED.toString(),
+                true,
+                LocalDateTime.now(),
+                pageable);
     }
 
+    private boolean tryToSeePost(Post post) {
+        boolean isAuthUser = false;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication instanceof UsernamePasswordAuthenticationToken) {
+            User reader = (User) authentication.getPrincipal();
+            isAuthUser = true;
+
+            //Автор может просматривать пост всегда
+            if(reader.equals(post.getAuthor())) {
+                return true;
+            } else if(reader.isModerator()) {
+                //Модертор может просматривать только активные посты (не черновики)
+                return post.isActive();
+            }
+        }
+
+        //если пользователь не привелигированный (Автор или Модератор),
+        // то смотреть может только посты:
+        // - у который дата публикации меньше текущей
+        // - активный пост (не черновик)
+        // - принятый можератором
+        if(post.getDate().isBefore(LocalDateTime.now())
+                && post.isActive()
+                && post.getModerationStatus() == ModerationStatus.ACCEPTED) {
+
+            if(isAuthUser) {
+                post.viewPost();
+                postRepository.save(post);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }
