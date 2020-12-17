@@ -15,6 +15,6 @@
 
 out/
 target/
-src/main/resources/static/fonts/*.woff*
+#src/main/resources/static/fonts/*.woff*
 upload/
 avatar/
