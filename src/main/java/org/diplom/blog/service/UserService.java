@@ -276,7 +276,6 @@ public class UserService {
                 } else {
                     photoPath = imageService.uploadImage(photo.getOriginalFilename(), photo.getBytes(), ImageType.AVATAR);
                 }
-
             }
 
         } catch(Exception ex) {
@@ -372,7 +371,7 @@ public class UserService {
         if(profileRequest.getPathPhoto() != null
                     || profileRequest.getRemovePhoto() == 1) {
             if(user.getPhoto() != null) {
-                imageService.deleteImageFromStorage(user.getPhoto());
+                imageService.deleteImage(user.getPhoto());
             }
             user.setPhoto(profileRequest.getPathPhoto());
         }

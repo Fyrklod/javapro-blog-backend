@@ -25,12 +25,6 @@ mail:
 server:
   port: ${PORT:9090}
 
-file-storage:
-  relative-path:
-    post: upload
-    avatar: avatar
-  depth: 3
-
 #JWT Configuration
 security:
   jwt:
@@ -41,6 +35,24 @@ security:
     token-expiration-day: 10 #864000000 #10 дней
     password-level-security: 12
 
+#Local storage
+file-storage:
+  type: cloud
+  temp-location: tmp_storage
+  relative-path:
+    post: upload
+    avatar: avatar
+  depth: 3
+
+#Cloudinary
+cloudinary:
+  url-resources: https://res.cloudinary.com/
+  cloud-name: javaesbblog
+  apikey: 744122468562629
+  api-secret: hRn5ibp8VBRg6V4y3V9U7OTF0HM
+  upload-image-url: /image/upload
+
+#BlogInfo
 blog:
   url: ${BLOGURL:http://localhost:9090}
   info:

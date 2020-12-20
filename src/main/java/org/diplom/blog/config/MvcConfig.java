@@ -18,15 +18,24 @@ public class MvcConfig implements WebMvcConfigurer {
     private String uploadPostPath;
     @Value("${file-storage.relative-path.avatar}")
     private String uploadAvatarPath;
+    @Value("${cloudinary.cloud-name}")
+    private String cloudName;
+    @Value("${cloudinary.url-resources}")
+    private String urlResources;
+    @Value("${cloudinary.upload-image-url}")
+    private String urlUploadImagePath;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         Path fullUploadPath = Paths.get(uploadPostPath).toAbsolutePath();
         Path fullAvatarPath = Paths.get(uploadAvatarPath).toAbsolutePath();
+        String fullCloudPath = urlResources+ cloudName + urlUploadImagePath;
 
         registry.addResourceHandler("/upload/**")
                 .addResourceLocations("file:/" + fullUploadPath + "/");
         registry.addResourceHandler("/avatar/**")
                 .addResourceLocations("file:/" + fullAvatarPath + "/");
+        registry.addResourceHandler("/" + cloudName + urlUploadImagePath + "/**")
+                .addResourceLocations(fullCloudPath + "/");
     }
 }
