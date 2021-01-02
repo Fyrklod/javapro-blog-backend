@@ -41,7 +41,7 @@ public class MailSenderTest {
                     "Команда \"%s\"", "user.getFullName()", urlForRestore, urlForRestore, "siteTitle");
 
 
-            mailSender.send("fyrklod@gmail.com", "testMail", letterText);
+            mailSender.sendMail("fyrklod@gmail.com", "testMail", letterText);
         } catch (Exception ex){
             ex.printStackTrace();
             verifiableError = ex;

@@ -12,8 +12,8 @@ spring:
     protocol: smtps
     host: smtp.gmail.com
     port: 465
-    username: JavaESBBlog@gmail.com
-    password: Blog!23$567New
+    username: ${BLOG_EMAIL_USERNAME:BLOG_EMAIL_USERNAME}
+    password: ${BLOG_EMAIL_PASSWORD:BLOG_EMAIL_PASSWORD}
 
 mail:
   debug: true
@@ -31,14 +31,14 @@ security:
     url-authentication: /api/auth/login
     authorization-header-name: Authorization
     prefix: Bearer
-    secret: JWTSecretKeyForBlogBackend092020
-    token-expiration-day: 10 #864000000 #10 дней
-    password-level-security: 12
+    secret: ${JWT_SECRET_KEY:JWT_SECRET_KEY}
+    token-expiration-day: ${JWT_EXPIRATION_DAY:10} #864000000 #10 дней
+    password-level-security: ${JWT_PASSWORD_LEVEL:12}
 
 #Local storage
 file-storage:
-  type: cloud
-  temp-location: tmp_storage
+  type: ${STORAGE_TYPE:cloud}
+  temp-location: ${STORAGE_TEMP_LOCATION:tmp_storage}
   relative-path:
     post: upload
     avatar: avatar
@@ -46,20 +46,20 @@ file-storage:
 
 #Cloudinary
 cloudinary:
-  url-resources: https://res.cloudinary.com/
-  cloud-name: javaesbblog
-  apikey: 744122468562629
-  api-secret: hRn5ibp8VBRg6V4y3V9U7OTF0HM
+  url-resources: ${CLOUDINARY_RESOURCE_URL:https://res.cloudinary.com/}
+  cloud-name: ${CLOUDINARY_USERNAME:CLOUDINARY_USERNAME}
+  apikey: ${CLOUDINARY_API_KEY:CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_SECRET_KEY:CLOUDINARY_SECRET_KEY}
   upload-image-url: /image/upload
 
 #BlogInfo
 blog:
-  url: ${BLOGURL:http://localhost:9090}
+  url: ${BLOG_URL:http://www.blogurl.ru}
   info:
     title: Блог интеграции
     subtitle: Общая информация
     copyright: Андрей Казаков
     copyrightFrom: 2020
     contact:
-      phone: +7 921 365-44-06
-      email: fyrklod@gmail.ru
+      phone: ${BLOG_CONTACT_PHONE:8 800 000-00-00}
+      email: ${BLOG_CONTACT_EMAIL:username@mail.ru}

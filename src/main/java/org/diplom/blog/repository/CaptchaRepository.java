@@ -13,13 +13,6 @@ import java.util.Optional;
  */
 @Repository
 public interface CaptchaRepository extends CrudRepository<CaptchaCode, Long> {
-    /*@Query(value = "INSERT INTO captcha_codes (post_id, user_id, value) " +
-            "VALUES (:postId, :userId, :value)",
-            nativeQuery = true)
-    CaptchaCode save(@Param("postId")long postId,
-                     @Param("userId")long userId,
-                     @Param("value")int value);*/
-
     void deleteByTimeLessThan(LocalDateTime localDateTime);
 
     Optional<CaptchaCode> findBySecretCode(String secretCode);

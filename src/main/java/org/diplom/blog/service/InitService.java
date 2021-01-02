@@ -1,5 +1,6 @@
 package org.diplom.blog.service;
 
+import org.diplom.blog.api.response.CaptchaResponse;
 import org.diplom.blog.api.response.InitResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,13 @@ public class InitService {
         this.initResponse = initResponse;
     }
 
+    /**
+     * Метод getInit.
+     * Метод возвращает общую информацию о блоге.
+     *
+     * @return ResponseEntity<InitResponse>
+     * @see InitResponse ;
+     */
     public ResponseEntity<InitResponse> getInit(){
         return ResponseEntity.ok(initResponse);
     }

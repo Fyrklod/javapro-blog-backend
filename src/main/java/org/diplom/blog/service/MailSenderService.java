@@ -24,16 +24,23 @@ public class MailSenderService {
     @Value("${spring.mail.username}")
     private String username;
 
+    /**
+     * Метод sendMail.
+     * Отправка email'а.
+     *
+     * @param emailTo - адрес получателя.
+     * @param subject - тебя письма.
+     * @param message - отправляемое сообщение.
+     */
     @SneakyThrows
-    public void send(String emailTo, String subject, String message) {
+    public void sendMail(String emailTo, String subject, String message) {
         MimeMessage mailMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mailMessage, false, "utf-8");
             helper.setFrom(username);
             helper.setTo(emailTo);
             helper.setSubject(subject);
-            //helper.setText(message, true);
-            mailMessage.setContent(message, "text/html; charset=UTF-8");//
+            mailMessage.setContent(message, "text/html; charset=UTF-8");
 
             javaMailSender.send(mailMessage);
         }  catch (MessagingException ex) {

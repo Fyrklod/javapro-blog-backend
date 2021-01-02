@@ -2,17 +2,11 @@ package org.diplom.blog.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.diplom.blog.api.request.ProfileRequest;
-import org.diplom.blog.api.request.RecoveryRequest;
-import org.diplom.blog.api.response.ProfileResponse;
-import org.diplom.blog.api.response.SimpleResponse;
+import org.diplom.blog.api.request.*;
+import org.diplom.blog.api.response.*;
 import org.diplom.blog.dto.ImageType;
 import org.diplom.blog.dto.ProfileError;
 import org.diplom.blog.exception.AuthException;
-import org.diplom.blog.api.request.AuthRequest;
-import org.diplom.blog.api.request.UserRequest;
-import org.diplom.blog.api.response.AuthResponse;
-import org.diplom.blog.api.response.UserResponse;
 import org.diplom.blog.dto.AuthError;
 import org.diplom.blog.dto.mapper.UserMapper;
 import org.diplom.blog.model.ModerationStatus;
@@ -24,9 +18,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -47,8 +41,8 @@ import java.awt.image.BufferedImage;
 import java.security.MessageDigest;
 import java.util.UUID;
 
-@Service
 @Slf4j
+@Service
 public class UserService {
 
     @Value("${blog.info.title}")
@@ -85,10 +79,18 @@ public class UserService {
         this.authenticationManager = authenticationManager;
     }
 
-    public ResponseEntity<UserResponse> login(UserRequest request) {
+    /**
+     * Метод login - авторизация пользователя.
+     *
+     * @param userRequest тело запроса в формате Json.
+     * @return ResponseEntity<UserResponse> .
+     * @see UserRequest ;
+     * @see UserResponse ;
+     */
+    public ResponseEntity<UserResponse> login(UserRequest userRequest) {
         try {
             Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                    new UsernamePasswordAuthenticationToken(userRequest.getEmail(), userRequest.getPassword())
             );
 
             SecurityContextHolder.getContext().setAuthentication(auth);
@@ -96,12 +98,20 @@ public class UserService {
             return ResponseEntity.ok(prepareUserResponse(currentUser));
 
         } catch (AuthenticationException authEx) {
-            log.error("Пользователю {} не удалось авторизоваться по причине ошибки {}", request.getEmail()
+            log.error("Пользователю {} не удалось авторизоваться по причине ошибки {}", userRequest.getEmail()
                                                                                       , authEx.getMessage());
             return ResponseEntity.ok(new UserResponse());
         }
     }
 
+    /**
+     * Метод logout - выход.
+     *
+     * @param httpRequest HTTPServlet запроса.
+     * @param httpResponse HTTPServlet ответа.
+     * @return ResponseEntity<SimpleResponse> .
+     * @see SimpleResponse;
+     */
     @SneakyThrows
     public ResponseEntity<SimpleResponse> logout(HttpServletRequest httpRequest,
                                                  HttpServletResponse httpResponse) {
@@ -117,21 +127,35 @@ public class UserService {
         return ResponseEntity.ok(new SimpleResponse(true));
     }
 
+    /**
+     * Метод check - проверка статуса авторизации.
+     *
+     * @return ResponseEntity<UserResponse> .
+     * @see UserResponse;
+     */
     public ResponseEntity<UserResponse> check() {
         try{
             User currentUser = getCurrentUser();
             return ResponseEntity.ok(prepareUserResponse(currentUser));
-        } catch (AccessDeniedException accessEx) {
+        } catch (AuthenticationException accessEx) {
             return ResponseEntity.ok(new UserResponse());
         }
     }
 
-    public ResponseEntity<SimpleResponse> restore(RecoveryRequest request) {
+    /**
+     * Метод restore - восстановление пароля.
+     *
+     * @param recoveryRequest тело запроса в формате Json.
+     * @return ResponseEntity<SimpleResponse> .
+     * @see RecoveryRequest;
+     * @see SimpleResponse;
+     */
+    public ResponseEntity<SimpleResponse> restore(RecoveryRequest recoveryRequest) {
         boolean result;
 
         try {
             String restoreHash = generateRestoreHash();
-            User user = getUserByEmail(request.getEmail());
+            User user = getUserByEmail(recoveryRequest.getEmail());
             user.setCode(restoreHash);
             userRepository.save(user);
 
@@ -146,24 +170,32 @@ public class UserService {
                     "Команда \"%s\"", user.getFullName(), urlForRestore, urlForRestore, siteTitle);
             //CompletableFuture.runAsync(() -> mailSenderService.send(user.getEmail(), "Восстановление пароля",
             //        letterText));
-            mailSenderService.send(user.getEmail(), "Восстановление пароля", letterText);
+            mailSenderService.sendMail(user.getEmail(), "Восстановление пароля", letterText);
 
             result = true;
         } catch(Exception ex) {
-            log.info("User {} not found for restore", request.getEmail());
+            log.info("User {} not found for restore", recoveryRequest.getEmail());
             result = false;
         }
 
         return ResponseEntity.ok(new SimpleResponse(result));
     }
 
+    /**
+     * Метод password - смена старого пароля пользователя.
+     *
+     * @param authRequest тело запроса в формате Json.
+     * @return ResponseEntity<AuthResponse>.
+     * @see AuthRequest;
+     * @see AuthResponse;
+     */
     @Transactional
-    public ResponseEntity<AuthResponse> password(AuthRequest request) {
+    public ResponseEntity<AuthResponse> password(AuthRequest authRequest) {
         AuthResponse response = new AuthResponse(true);
 
         try {
-            if(request.getPassword().length() < 6) {
-                log.error("При восстановлении пароля для пользователя {} введен некорректный пароль", request.getEmail());
+            if(authRequest.getPassword().length() < 6) {
+                log.error("При восстановлении пароля для пользователя {} введен некорректный пароль", authRequest.getEmail());
 
                 throw new AuthException(AuthError.builder()
                         .password("Пароль короче 6-ти символов")
@@ -171,8 +203,8 @@ public class UserService {
                 );
             }
 
-            if(captchaService.checkCaptchaCode(request.getCaptcha(), request.getCaptchaSecret())) {
-                User user = userRepository.findByCode(request.getCode())
+            if(captchaService.checkCaptchaCode(authRequest.getCaptcha(), authRequest.getCaptchaSecret())) {
+                User user = userRepository.findByCode(authRequest.getCode())
                         .orElseThrow(() -> new AuthException(AuthError.builder()
                                 .code("Ссылка для восстановления пароля устарела. " +
                                         "<a href=\"/login/restore-password\">Запросить ссылку снова</a>")
@@ -181,14 +213,14 @@ public class UserService {
 
 
                 user.setCode(null);
-                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
 
                 userRepository.save(user);
 
                 log.info("Пароль для пользователя {} успешно восстановлен", user.getEmail());
 
             } else {
-                log.error("При восстановлении пароля для пользователя {} введен неверный код", request.getEmail());
+                log.error("При восстановлении пароля для пользователя {} введен неверный код", authRequest.getEmail());
 
                 throw new AuthException(AuthError.builder()
                         .captcha("Код с картинки введён неверно")
@@ -202,9 +234,18 @@ public class UserService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Метод register - регистрация нового пользователя.
+     * Регистрация возможно, если на сайте включен много пользовательский режим
+     *
+     * @param authRequest тело запроса в формате Json.
+     * @return ResponseEntity<AuthResponse> .
+     * @see AuthRequest;
+     * @see AuthResponse;
+     */
     @SneakyThrows
     @Transactional
-    public ResponseEntity<AuthResponse> register(AuthRequest request) {
+    public ResponseEntity<AuthResponse> register(AuthRequest authRequest) {
         Boolean isMultiuserMode = settingService.getBooleanSettingValueByCode("MULTIUSER_MODE");
 
         if(!isMultiuserMode) {
@@ -214,38 +255,31 @@ public class UserService {
         AuthResponse response = new AuthResponse(true);
 
         try {
-            if(request.getPassword().length() < 6) {
+            if(authRequest.getPassword().length() < 6) {
                 throw new AuthException(AuthError.builder()
                                             .password("Пароль короче 6-ти символов")
                                             .build()
                             );
             }
 
-            if(captchaService.checkCaptchaCode(request.getCaptcha(), request.getCaptchaSecret())) {
+            if(captchaService.checkCaptchaCode(authRequest.getCaptcha(), authRequest.getCaptchaSecret())) {
 
-                if(userRepository.findByEmail(request.getEmail()).isPresent()) {
+                if(userRepository.findByEmail(authRequest.getEmail()).isPresent()) {
                     throw new AuthException(AuthError.builder()
                             .email("Этот e-mail уже зарегистрирован")
                             .build()
                     );
                 }
 
-                /*if(userRepository.findByFullName(request.getName()).isPresent()) {
-                    throw new AuthException(AuthError.builder()
-                            .name("Имя указано неверно")
-                            .build()
-                    );
-                }*/
-
                 User user = new User();
-                user.setFullName(request.getName());
-                user.setEmail(request.getEmail());
-                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                user.setFullName(authRequest.getName());
+                user.setEmail(authRequest.getEmail());
+                user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
                 user.setModerator(false);
 
                 userRepository.save(user);
 
-                log.info("User {} successfully registered", request.getEmail());
+                log.info("Пользователь {} успешно зарегистрирован", authRequest.getEmail());
 
             } else {
                 throw new AuthException(AuthError.builder()
@@ -260,6 +294,18 @@ public class UserService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Метод profile - редактирование профиля
+     *
+     * @param photo обновленная аватарка в формате Multipart form-data
+     * @param name новое имя пользователя
+     * @param email новый email
+     * @param password новый пароль
+     * @param removePhoto признак удаления аватарки.
+     * @return ResponseEntity<ProfileResponse>
+     * @see ProfileRequest;
+     * @see ProfileResponse;
+     */
     public ResponseEntity<ProfileResponse> profile(MultipartFile photo,
                                                    String name,
                                                    String email,
@@ -300,27 +346,57 @@ public class UserService {
         return ResponseEntity.ok(profileResponse);
     }
 
+    /**
+     * Метод profile - редактирование профиля
+     *
+     * @param profileRequest тело запроса в формате Json.
+     * @return ResponseEntity<ProfileResponse>
+     * @see ProfileRequest;
+     * @see ProfileResponse;
+     */
     public ResponseEntity<ProfileResponse> profile(ProfileRequest profileRequest) {
         ProfileResponse profileResponse = internalProfile(profileRequest);
         return ResponseEntity.ok(profileResponse);
     }
 
+    /**
+     * Метод getUserByEmail - получение пользователя по Email регистрации.
+     *
+     * @param email - email пользователя.
+     * @return User - пользователь .
+     * @see User;
+     */
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Пользователь '%s' не найден!", email)));
     }
 
+    /**
+     * Метод getCurrentUser - получает текущего пользователя.
+     * Если пользователь не авторизован, то метод свалится в ошибку BadCredentialsException
+     *
+     * @return User - текущий пользователь
+     * @see User;
+     */
     @SneakyThrows
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication instanceof AnonymousAuthenticationToken) {
-            throw new AccessDeniedException("Необходимо авторизоваться");
+            throw new BadCredentialsException("Необходимо авторизоваться");
         }
 
         return  (User) authentication.getPrincipal();
     }
 
+    /**
+     * Метод internalProfile - внутренний метод для редактирования профиля.
+     *
+     * @param profileRequest тело запроса в формате Json.
+     * @return ProfileResponse - сервисный ответ с информацией о профиле.
+     * @see ProfileRequest;
+     * @see ProfileResponse;
+     */
     private ProfileResponse internalProfile(ProfileRequest profileRequest) {
         User user = getCurrentUser();
         ProfileError error = new ProfileError();
@@ -389,6 +465,15 @@ public class UserService {
         }
     }
 
+    /**
+     * Метод prepareUserResponse - подготовлка сервисного ответа с данными пользователя.
+     * Данный метод оборачивает модель пользователя в сообщение типа ответ дополняя новыми полями
+     *
+     * @param user - пользователь.
+     * @return UserResponse - информация о пользователе.
+     * @see User;
+     * @see UserResponse;
+     */
     private UserResponse prepareUserResponse(User user) {
         UserResponse response = new UserResponse(UserMapper.toUserFullInfo(user));
 
@@ -403,6 +488,11 @@ public class UserService {
         return  response;
     }
 
+    /**
+     * Метод generateRestoreHash - генерация Хэш-кода для восстановления пароля.
+     *
+     * @return сгенерированный код.
+     */
     @SneakyThrows
     private String generateRestoreHash() {
         String uuid = UUID.randomUUID().toString();

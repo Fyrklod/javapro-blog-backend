@@ -3,7 +3,6 @@ package org.diplom.blog.api.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import org.diplom.blog.dto.ImageError;
-import org.diplom.blog.dto.UploadTextError;
 
 /**
  * @author Andrey.Kazakov

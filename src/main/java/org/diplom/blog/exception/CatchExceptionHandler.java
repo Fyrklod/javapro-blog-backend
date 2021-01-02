@@ -1,12 +1,9 @@
 package org.diplom.blog.exception;
 
-import org.diplom.blog.api.response.CommonResponse;
 import org.diplom.blog.api.response.ImageResponse;
 import org.diplom.blog.api.response.UploadResponse;
-import org.diplom.blog.dto.AbstractError;
 import org.diplom.blog.dto.ImageError;
 import org.diplom.blog.dto.UploadTextError;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,6 +11,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.security.InvalidParameterException;
+import java.util.NoSuchElementException;
 
 /**
  * @author Andrey.Kazakov
@@ -29,6 +27,11 @@ public class CatchExceptionHandler extends ResponseEntityExceptionHandler {
                         new ImageError("Размер файла превышает допустимый размер")
                 )
         );
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    protected ResponseEntity handleNoSuchElementException() {
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(UploadImageException.class)

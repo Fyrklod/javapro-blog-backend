@@ -34,6 +34,15 @@ public class CommentService {
         this.userService = userService;
     }
 
+    /**
+     * Метод addComment.
+     * Добавление нового комментария.
+     *
+     * @param commentRequest тело запроса в формате Json.
+     * @return ResponseEntity<CommentResponse> .
+     * @see CommentRequest;
+     * @see CommentResponse;
+     */
     @SneakyThrows
     public ResponseEntity<CommentResponse> addComment(CommentRequest commentRequest) {
 

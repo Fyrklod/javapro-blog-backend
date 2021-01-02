@@ -14,7 +14,6 @@ import org.springframework.util.Base64Utils;
 
 import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -42,6 +41,13 @@ public class CaptchaService {
         this.imageService = imageService;
     }
 
+    /**
+     * Метод getCaptcha.
+     * Генерация капчи.
+     *
+     * @return ResponseEntity<CaptchaResponse>
+     * @see CaptchaResponse ;
+     */
     @SneakyThrows
     @Transactional
     public ResponseEntity<CaptchaResponse> getCaptcha()  {
@@ -64,16 +70,32 @@ public class CaptchaService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Метод checkCaptchaCode.
+     * Проверка кода капчи полученного с фронта с кодом зарошенного из базы по секретному коду.
+     *
+     * @param captchaCode - введенный код капчи на фронте.
+     * @param captchaSecret - секретный код для получения капчи из базы.
+     * @return true - если коды совпали, false - коды не совпали.
+     */
     public boolean checkCaptchaCode(String captchaCode, String captchaSecret) {
-        Optional<CaptchaCode> optionalCaptchaCode = captchaRepository.findBySecretCode(captchaSecret);
+        try {
+            CaptchaCode optionalCaptchaCode = captchaRepository.findBySecretCode(captchaSecret)
+                                                               .orElseThrow();
 
-        if(optionalCaptchaCode.isPresent()){
-            return optionalCaptchaCode.get().getCode().equals(captchaCode);
+            return optionalCaptchaCode.getCode().equals(captchaCode);
+        } catch (Exception ex) {
+            return false;
         }
-
-        return false;
     }
 
+    /**
+     * Метод captchaGenerate.
+     * Генерация изображения Капчи.
+     *
+     * @param captchaCode - код капчи.
+     * @return String - закодированное сгенерированное изображение.
+     */
     @SneakyThrows
     private String captchaGenerate(String captchaCode)  {
         Cage cage = new GCage();
@@ -82,6 +104,12 @@ public class CaptchaService {
         return Base64Utils.encodeToString(bytes);
     }
 
+    /**
+     * Метод generateCaptchaCode.
+     * Генерация кода капчи.
+     *
+     * @return String.
+     */
     private String generateCaptchaCode() {
         char[] chars = "abcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
         StringBuilder captchaStringBuilder = new StringBuilder(SIZE_CAPTCHA_CODE);
@@ -95,10 +123,13 @@ public class CaptchaService {
         return captchaStringBuilder.toString();
     }
 
+    /**
+     * Метод clearOldCaptcha.
+     * Очистка старой капчи.
+     */
     @Transactional
     private void clearOldCaptcha() {
         LocalDateTime localDateTime = LocalDateTime.now().minusHours(HOURS_FOR_EXPIRE);
         captchaRepository.deleteByTimeLessThan(localDateTime);
     }
-
 }

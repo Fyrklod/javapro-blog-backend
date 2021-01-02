@@ -1,5 +1,7 @@
 package org.diplom.blog.service;
 
+import org.diplom.blog.api.request.CommentRequest;
+import org.diplom.blog.api.response.CommentResponse;
 import org.diplom.blog.dto.EntityCount;
 import org.diplom.blog.dto.TagDto;
 import org.diplom.blog.dto.mapper.TagMapper;
@@ -32,13 +34,21 @@ public class TagService {
         this.tagsRepository = tagsRepository;
     }
 
+    /**
+     * Метод saveTagByListName - сохранение списка тегов.
+     * Сохранение списка имен тегов (если в списке есть уже созданные теги, то они повторно создаваться не будут)
+     *
+     * @param listOfTagName - список наименований тегов.
+     * @return List<Tag>
+     * @see Tag .
+     */
     @Transactional
-    public List<Tag> saveTagByListName(List<String> names){
+    public List<Tag> saveTagByListName(List<String> listOfTagName){
         List<Tag> savedTags = new ArrayList<>();
 
-        if(names != null && names.size() > 0){
-            List<Tag> tagsFromDb = tagsRepository.findByNameIn(names);
-            List<Tag> tagsToDb = names.parallelStream()
+        if(listOfTagName != null && listOfTagName.size() > 0){
+            List<Tag> tagsFromDb = tagsRepository.findByNameIn(listOfTagName);
+            List<Tag> tagsToDb = listOfTagName.parallelStream()
                     .filter(n -> tagsFromDb.parallelStream()
                             .map(Tag::getName)
                             .noneMatch(tn -> tn.equals(n)))
@@ -51,6 +61,14 @@ public class TagService {
         return savedTags;
     }
 
+    /**
+     * Метод getTagsBySearch - получение всех тегов по шаблону запроса.
+     * Данный метод выводит список тегов с их весом (количеством упоминаний в постах)
+     *
+     * @param search шаблон запроса.
+     * @return ResponseEntity<TagResponse>
+     * @see TagResponse;
+     */
     public ResponseEntity<TagResponse> getTagsBySearch(String search) {
         TagResponse response = new TagResponse();
 

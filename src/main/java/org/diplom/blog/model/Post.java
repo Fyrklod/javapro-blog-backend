@@ -1,5 +1,6 @@
 package org.diplom.blog.model;
 
+import io.jsonwebtoken.lang.Assert;
 import lombok.*;
 import lombok.experimental.Accessors;
 import net.bytebuddy.implementation.bind.annotation.Argument;
@@ -13,8 +14,6 @@ import java.util.List;
 @Data
 @Entity
 @Accessors(chain = true)
-//@Builder
-//@AllArgsConstructor
 @Table(name = "Posts")
 public class Post {
     @Id
@@ -80,9 +79,5 @@ public class Post {
         if(moderationStatus!=null){
             this.moderationStatusValue = moderationStatus.toString();
         }
-    }
-
-    public synchronized void viewPost(){
-        viewCount++;
     }
 }

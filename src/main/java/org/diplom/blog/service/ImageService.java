@@ -4,7 +4,9 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import io.jsonwebtoken.lang.Assert;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.diplom.blog.api.request.CommentRequest;
 import org.diplom.blog.dto.ImageType;
 import org.diplom.blog.dto.StorageType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import java.util.*;
  * @author Andrey.Kazakov
  * @date 01.12.2020
  */
+@Slf4j
 @Service
 public class ImageService {
 
@@ -49,7 +52,7 @@ public class ImageService {
     private int depthStorage;
 
     private final Cloudinary cloudinary;
-    //TODO:в ТЗ указаны только "jpg", "png"
+
     private final String[] permittedExtension = {"jpg", "png", "gif", "bmp"};
 
     @Autowired
@@ -57,28 +60,53 @@ public class ImageService {
         this.cloudinary = cloudinary;
     }
 
+    /**
+     * Метод uploadImage.
+     * Загрузка изображения.
+     *
+     * @param multipartFile multipart form-data файл
+     * @param imageType - тип изображения (для поста или аватарка).
+     * @return относительный путь загруженного изображения.
+     * @see ImageType ;
+     */
     @SneakyThrows
-    public String uploadImage(MultipartFile multipartFile, ImageType type) {
+    public String uploadImage(MultipartFile multipartFile, ImageType imageType) {
         if(multipartFile == null || multipartFile.isEmpty()) {
             throw new InvalidParameterException("Загружаемое сообщение не может быть пустым");
         }
 
         return (StorageType.StorageType(storageType)  == StorageType.CLOUD)
                     ? uploadImageToCloud(multipartFile)
-                    : uploadImageToLocalFolder(multipartFile, type);
+                    : uploadImageToLocalFolder(multipartFile, imageType);
     }
 
+    /**
+     * Метод uploadImage.
+     * Загрузка изображения.
+     *
+     * @param fileName имя файла
+     * @param originalFileBytes - массив байтов изображения.
+     * @param imageType - тип изображения (для поста или аватарка).
+     * @return относительный путь загруженного изображения.
+     * @see ImageType ;
+     */
     @SneakyThrows
-    public String uploadImage(String fileName, byte[] originalFileBytes, ImageType type) {
+    public String uploadImage(String fileName, byte[] originalFileBytes, ImageType imageType) {
         if(originalFileBytes == null) {
             throw new InvalidParameterException("Массив байтов файла не должен быть пустым");
         }
 
         return (StorageType.StorageType(storageType)  == StorageType.CLOUD)
                 ? uploadImageToCloud(originalFileBytes)
-                : uploadImageToLocalFolder(fileName, originalFileBytes, type);
+                : uploadImageToLocalFolder(fileName, originalFileBytes, imageType);
     }
 
+    /**
+     * Метод deleteImage.
+     * Удаление изображения.
+     *
+     * @param relativePathImage относительный путь к изображению
+     */
     @SneakyThrows
     public void deleteImage(String relativePathImage) {
         if(StorageType.StorageType(storageType)  == StorageType.CLOUD){
@@ -92,12 +120,30 @@ public class ImageService {
         }
     }
 
+    /**
+     * Метод imageResize.
+     * Изменение размеров изображения.
+     *
+     * @param inputStream - поток изображения
+     * @param targetWidth - ширина.
+     * @param targetHeight - высота.
+     * @return массив байтов измененного изображения.
+     */
     @SneakyThrows
-    public byte[] imageResize(InputStream steam, int targetWidth, int targetHeight){
-        BufferedImage image = ImageIO.read(steam);
+    public byte[] imageResize(InputStream inputStream, int targetWidth, int targetHeight){
+        BufferedImage image = ImageIO.read(inputStream);
         return imageResize(image, targetWidth, targetHeight);
     }
 
+    /**
+     * Метод imageResize.
+     * Изменение размеров изображения.
+     *
+     * @param originalImage - буффер изображения
+     * @param targetWidth - ширина.
+     * @param targetHeight - высота.
+     * @return массив байтов измененного изображения.
+     */
     @SneakyThrows
     public byte[] imageResize(BufferedImage originalImage, int targetWidth, int targetHeight) {
         if(targetHeight <= 0 || targetWidth <= 0){
@@ -120,11 +166,25 @@ public class ImageService {
         return imageInByte;
     }
 
+    /**
+     * Метод uploadImageToCloud.
+     * Загрузка изображения в облако.
+     *
+     * @param multipartFile multipart form-data файл
+     * @return относительный путь загруженного изображения.
+     */
     @SneakyThrows
     private String uploadImageToCloud(MultipartFile multipartFile) {
         return uploadImageToCloud(multipartFile.getBytes());
     }
 
+    /**
+     * Метод uploadImageToCloud.
+     * Загрузка изображения в облако.
+     *
+     * @param originalFileBytes массив байтов загружаемого файла
+     * @return относительный путь загруженного изображения.
+     */
     @SneakyThrows
     private String uploadImageToCloud(byte[] originalFileBytes) {
         Map uploadResult = cloudinary.uploader().upload(originalFileBytes, ObjectUtils.emptyMap());
@@ -133,16 +193,35 @@ public class ImageService {
         return result.substring(result.indexOf(cloudName) - 1);
     }
 
+    /**
+     * Метод uploadImageToLocalFolder.
+     * Загрузка изображения в локальную папку на сервере.
+     *
+     * @param multipartFile multipart form-data файл
+     * @param imageType - тип изображения (для поста или аватарка).
+     * @return относительный путь загруженного изображения.
+     * @see ImageType ;
+     */
     @SneakyThrows
-    private String uploadImageToLocalFolder(MultipartFile multipartFile, ImageType type) {
+    private String uploadImageToLocalFolder(MultipartFile multipartFile, ImageType imageType) {
 
         return uploadImageToLocalFolder(multipartFile.getOriginalFilename(),
                 multipartFile.getBytes(),
-                type);
+                imageType);
     }
 
+    /**
+     * Метод uploadImageToLocalFolder.
+     * Загрузка изображения в локальную папку на сервере.
+     *
+     * @param fileName имя файла
+     * @param originalFileBytes - массив байтов изображения.
+     * @param imageType - тип изображения (для поста или аватарка).
+     * @return относительный путь загруженного изображения.
+     * @see ImageType ;
+     */
     @SneakyThrows
-    private String uploadImageToLocalFolder(String fileName, byte[] originalFileBytes, ImageType type) {
+    private String uploadImageToLocalFolder(String fileName, byte[] originalFileBytes, ImageType imageType) {
         String fileExtension = Objects.requireNonNull(StringUtils.getFilenameExtension(fileName))
                                                                  .toLowerCase();
 
@@ -150,7 +229,7 @@ public class ImageService {
             throw new InvalidParameterException("Загружаемый файл не является изображением");
         }
 
-        String uploadFolder = (type == ImageType.POST_IMAGE)
+        String uploadFolder = (imageType == ImageType.POST_IMAGE)
                                     ? uploadPostPath
                                     : uploadAvatarPath;
         String uploadSubFolder = generateSubFolderPath();
@@ -165,7 +244,6 @@ public class ImageService {
                                         + "_" + fileName)
                                 .toAbsolutePath();
 
-        //multipartFile.transferTo(uploadFilePath);
         Files.write(uploadFilePath, originalFileBytes);
 
         return "\\" + Paths.get(uploadFolder)
@@ -175,6 +253,12 @@ public class ImageService {
                 .toString();
     }
 
+    /**
+     * Метод deleteImageFromCloud.
+     * Удаление изображения в облаке.
+     *
+     * @param publicName уникальное имя файла
+     */
     private void deleteImageFromCloud(String publicName) {
         try {
             if (publicName.isBlank()) {
@@ -191,6 +275,12 @@ public class ImageService {
         }
     }
 
+    /**
+     * Метод deleteImageFromLocalStorage.
+     * Удаление изображения из локальной папки сервера.
+     *
+     * @param relativePathImage относительный путь к изображению
+     */
     private void deleteImageFromLocalStorage(String relativePathImage) {
         if(relativePathImage.startsWith("\\")){
             relativePathImage = relativePathImage.substring(1);
@@ -200,16 +290,21 @@ public class ImageService {
         deleteImageTreeFolderIfEmpty(deletionImagePath);
     }
 
+    /**
+     * Метод deleteImageTreeFolderIfEmpty.
+     * Удаление изображения вместе с деревом каталогов (если они остаются пустыми).
+     *
+     * @param deletionPath относительный путь к изображению
+     */
     private void deleteImageTreeFolderIfEmpty(Path deletionPath) {
         Assert.notNull(deletionPath, "Удаляемый файл не может быть пустым");
         File deletionFile = deletionPath.toFile();
-        //Assert.isTrue((!deletionFile.exists()), "Folder is not exists");
 
         for(int i=depthStorage; i>=0; i--) {
             //если в родительском каталоге более одого файла - удаляем текущий и выходим
             if(Objects.requireNonNull(deletionFile.getParentFile().list()).length > 1 || i==0) {
                 if(!FileSystemUtils.deleteRecursively(deletionFile)){
-                    System.out.println("не удалось удалить");
+                    log.info("Не удалось удалить {}", deletionFile);
                 }
                 break;
             }
@@ -218,6 +313,12 @@ public class ImageService {
         }
     }
 
+    /**
+     * Метод generateSubFolderPath.
+     * Генерация пути вложенных каталогов.
+     *
+     * @return относительный путь к файлу.
+     */
     private String generateSubFolderPath() {
         String[] folderName = {"ab", "cd", "ef"};
 

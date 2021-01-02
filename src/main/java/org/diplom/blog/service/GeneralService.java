@@ -45,6 +45,15 @@ public class GeneralService {
         this.postRepository = postRepository;
     }
 
+    /**
+     * Метод getCalendar - получения календаря постов.
+     * Метод выводит количества публикаций на каждую дату переданного в параметре year года или текущего года,
+     * если параметр year не задан.
+     *
+     * @param year год для которого производится запрос.
+     * @return ResponseEntity<CalendarResponse>.
+     * @see CalendarResponse;
+     */
     public ResponseEntity<CalendarResponse> getCalendar(String year) {
 
         Pattern pattern = Pattern.compile("(\\d{4})");
@@ -72,6 +81,14 @@ public class GeneralService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Метод addImage - Загрузка изображений.
+     * Метод загружает на сервер изображение в папку upload и три случайные подпапки.
+     * Метод возвращает путь до изображения.
+     *
+     * @param upload multipart form-data файл
+     * @return ResponseEntity<String>
+     */
     @SneakyThrows
     public ResponseEntity<String> addImage(MultipartFile upload) {
         try {
@@ -82,16 +99,25 @@ public class GeneralService {
         }
     }
 
+    /**
+     * Метод moderationPost - Модерация поста.
+     * Метод фиксирует действие модератора по посту: его утверждение или отклонение. Кроме того,
+     * фиксируется moderator_id - идентификатор пользователя, который отмодерировал пост.
+     *
+     * @param moderationRequest тело запроса в формате Json.
+     * @return ResponseEntity<SimpleResponse>.
+     * @see ModerationRequest;
+     * @see SimpleResponse;
+     */
     @Transactional
-    public ResponseEntity<SimpleResponse> moderationPost(ModerationRequest request) {
+    public ResponseEntity<SimpleResponse> moderationPost(ModerationRequest moderationRequest) {
         boolean result;
 
         try {
-            Post post = postRepository.findById(request.getPostId())
-                            .orElseThrow(() -> new Exception("Пост не найден"));
+            Post post = postRepository.findById(moderationRequest.getPostId()).orElseThrow();
             User moderator = userService.getCurrentUser();
             post.setModerationStatusValue(
-                    request.getDecision().equals(Decision.ACCEPT)
+                    moderationRequest.getDecision().equals(Decision.ACCEPT)
                             ? ModerationStatus.ACCEPTED.toString()
                             : ModerationStatus.DECLINED.toString()
             );

@@ -3,7 +3,6 @@ package org.diplom.blog.exception;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.diplom.blog.dto.AbstractError;
-import org.diplom.blog.dto.AuthError;
 
 import java.lang.reflect.Field;
 

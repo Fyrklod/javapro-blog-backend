@@ -3,9 +3,6 @@ package org.diplom.blog.api.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
-/*@Getter
-@Setter
-@NoArgsConstructor*/
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostRequest {

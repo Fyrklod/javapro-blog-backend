@@ -1,6 +1,8 @@
 package org.diplom.blog.service;
 
 import lombok.SneakyThrows;
+import org.diplom.blog.api.request.CommentRequest;
+import org.diplom.blog.api.response.CommentResponse;
 import org.diplom.blog.api.response.StatisticsResponse;
 import org.diplom.blog.dto.SettingsDto;
 import org.diplom.blog.model.GlobalSetting;
@@ -39,6 +41,12 @@ public class SettingService {
         this.userService = userService;
     }
 
+    /**
+     * Метод getGlobalSettings - получение всех настроек блога.
+     *
+     * @return ResponseEntity<SettingsDto> .
+     * @see SettingsDto;
+     */
     public ResponseEntity<SettingsDto> getGlobalSettings(){
         SettingsDto settings = new SettingsDto();
         Iterable<GlobalSetting> globalSettings = settingsRepository.findAll();
@@ -49,8 +57,14 @@ public class SettingService {
         return ResponseEntity.ok(settings);
     }
 
+    /**
+     * Метод saveGlobalSettings - сохранение настроек блога.
+     *
+     * @param settings - настройка блога.
+     * @see SettingsDto;
+     */
     @Transactional
-    public void setGlobalSettings(SettingsDto settings) throws Exception {
+    public void saveGlobalSettings(SettingsDto settings) throws Exception {
 
         if(settings != null && settings.size() > 0){
             List<GlobalSetting> globalSettings = new ArrayList<>();
@@ -74,6 +88,12 @@ public class SettingService {
         }
     }
 
+    /**
+     * Метод getMyStatistics - получение моей статистики на сайте.
+     *
+     * @return ResponseEntity<StatisticsResponse>.
+     * @see StatisticsResponse;
+     */
     public ResponseEntity<StatisticsResponse> getMyStatistics() {
         User currentUser = userService.getCurrentUser();
 
@@ -90,6 +110,12 @@ public class SettingService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Метод getAllStatistics - получение всей статистики сайта.
+     *
+     * @return ResponseEntity<StatisticsResponse>
+     * @see StatisticsResponse;
+     */
     @SneakyThrows
     public ResponseEntity<StatisticsResponse> getAllStatistics() {
         Boolean statisticsIsPublic = getBooleanSettingValueByCode("STATISTICS_IS_PUBLIC");
@@ -111,11 +137,24 @@ public class SettingService {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Метод getBooleanSettingValueByCode - получение значения настройки по указанному коду.
+     *
+     * @param settingCode - код настройки.
+     * @return - true если устновлено значение, false если не установлено .
+     */
     public Boolean getBooleanSettingValueByCode(String settingCode) throws Exception {
         GlobalSetting setting = getSettingValueByCode(settingCode);
         return setting.getValue().equals("YES");
     }
 
+    /**
+     * Метод getSettingValueByCode - получение настройки по указанному коду.
+     *
+     * @param settingCode - код настройки.
+     * @return GlobalSetting
+     * @see GlobalSetting .
+     */
     private GlobalSetting getSettingValueByCode(String settingCode) throws Exception {
         return settingsRepository.findByCode(settingCode)
                 .orElseThrow(() -> new Exception(String.format("В базе отсутствует настройка с кодом %s"

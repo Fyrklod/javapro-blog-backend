@@ -1,6 +1,7 @@
 package org.diplom.blog.service;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.diplom.blog.api.response.*;
 import org.diplom.blog.dto.UploadTextError;
 import org.diplom.blog.dto.Mode;
@@ -18,9 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class PostService {
 
@@ -53,28 +53,15 @@ public class PostService {
         this.userService = userService;
     }
 
-    @Transactional
-    public ResponseEntity<PostResponse> getPostById(Long id){
-        //Метод выводит данные конкретного поста для отображения на странице поста, в том числе,
-        // список комментариев и тэгов, привязанных к данному посту. Выводит пост в любом случае,
-        // если пост активен (параметр is_active в базе данных равен 1),
-        // принят модератором (параметр moderation_status равен ACCEPTED)
-        // и время его публикации (поле timestamp) равно текущему времени или меньше его формата UTC.
-        Optional<Post> optionalPost = postRepository.findById(id);
-
-        if(optionalPost.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Post post = optionalPost.get();
-        if(!tryToSeePost(post)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        PostResponse response = PostMapper.toSinglePostResponse(post);
-        return ResponseEntity.ok(response);
-    }
-
+    /**
+     * Метод getPosts - Получить список постов, согласно указанного режима фильтра.
+     * @param offset - смещение в общем списке постов.
+     * @param limit - лимитированное количество постов.
+     * @param mode - режим фильтра.
+     * @return ResponseEntity<PostListResponse>.
+     * @see Mode;
+     * @see PostListResponse;
+     */
     public ResponseEntity<PostListResponse> getPosts(int offset, int limit, Mode mode) {
         Page<Post> pages;
 
@@ -103,6 +90,14 @@ public class PostService {
         }
     }
 
+    /**
+     * Метод searchPosts - Получить список постов, которые содержат в себе данные указанные в "шаблоне поиска".
+     * @param pattern - шаблон поиска.
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на странице.
+     * @return ResponseEntity<PostListResponse>.
+     * @see PostListResponse;
+     */
     public ResponseEntity<PostListResponse> searchPosts(String pattern, int pageIndex, int pageSize) {
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
 
@@ -121,6 +116,14 @@ public class PostService {
         }
     }
 
+    /**
+     * Метод getAllByTag - Получить список постов по указанному тегу.
+     * @param tag - тэг.
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на странице.
+     * @return ResponseEntity<PostListResponse>.
+     * @see PostListResponse;
+     */
     public ResponseEntity<PostListResponse> getAllByTag(String tag, int pageIndex, int pageSize){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
 
@@ -139,6 +142,14 @@ public class PostService {
         }
     }
 
+    /**
+     * Метод getPostsByDate - Получить список постов за указанную дату.
+     * @param localDate - дата за которую нужно показать список постов.
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на странице.
+     * @return ResponseEntity<PostListResponse>.
+     * @see PostListResponse;
+     */
     public ResponseEntity<PostListResponse> getPostsByDate(LocalDate localDate, int pageIndex, int pageSize){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
 
@@ -153,7 +164,17 @@ public class PostService {
         }
     }
 
-    public ResponseEntity<PostListResponse> getPostForModeration(ModerationStatus status, int pageIndex, int pageSize){
+    /**
+     * Метод getPostForModeration - Список постов для модерации.
+     * @param moderationStatus - статус модерации.
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на странице.
+     * @return ResponseEntity<PostListResponse>.
+     * @see ModerationStatus;
+     * @see PostListResponse;
+     */
+    public ResponseEntity<PostListResponse> getPostForModeration(ModerationStatus moderationStatus,
+                                                                 int pageIndex, int pageSize){
         try {
             User currentUser = userService.getCurrentUser();
 
@@ -162,11 +183,11 @@ public class PostService {
             }
 
             Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
-            Page<Post> pages = status.equals(ModerationStatus.NEW)
-                           ? postRepository.findByModerationStatusValueAndIsActive(status.toString(),
+            Page<Post> pages = moderationStatus.equals(ModerationStatus.NEW)
+                           ? postRepository.findByModerationStatusValueAndIsActive(moderationStatus.toString(),
                                                                              true, pageable)
                            : postRepository.findByModeratorAndModerationStatusValueAndIsActive(currentUser
-                                                                            , status.toString(), true, pageable);
+                                                                            , moderationStatus.toString(), true, pageable);
             return preparePostsResponse(pages);
 
         } catch (Exception ex){
@@ -175,6 +196,15 @@ public class PostService {
         }
     }
 
+    /**
+     * Метод getMyPosts - Список моих постов.
+     * @param postStatus - статус постов.
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на странице.
+     * @return ResponseEntity<PostListResponse>.
+     * @see PostStatus;
+     * @see PostListResponse;
+     */
     @SneakyThrows
     public ResponseEntity<PostListResponse> getMyPosts(PostStatus postStatus, int pageIndex, int pageSize) {
         User currentUser = userService.getCurrentUser();
@@ -189,14 +219,55 @@ public class PostService {
         return preparePostsResponse(pages);
     }
 
-    public ResponseEntity<UploadResponse> addPost(PostRequest request)throws Exception {
-        return savePost(0L, request);
+    /**
+     * Метод getPostById - Запрос на получение поста по его идентификатору.
+     * @param id - идентификатор запрашиваемого поста.
+     * @return ResponseEntity<PostResponse>.
+     * @see PostResponse;
+     */
+    @Transactional
+    public ResponseEntity<PostResponse> getPostById(Long id) {
+        Post post = postRepository.findById(id).orElseThrow();
+
+        if(!tryToOpenPost(post)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        increaseOfViewsPost(post);
+        PostResponse response = PostMapper.toSinglePostResponse(post);
+        return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<UploadResponse> editPost(Long id, PostRequest request) throws Exception{
-        return savePost(id, request);
+    /**
+     * Метод addPost - добавление нового поста.
+     * @param postRequest - запрос на добавление поста.
+     * @return ResponseEntity<UploadResponse>.
+     * @see PostRequest;
+     * @see UploadResponse;
+     */
+    public ResponseEntity<UploadResponse> addPost(PostRequest postRequest) throws Exception {
+        return savePost(0L, postRequest);
     }
 
+    /**
+     * Метод editPost - редактирование поста.
+     * @param id - идентификатор редактируемого поста.
+     * @param postRequest - запрос на изменение постов.
+     * @return ResponseEntity<UploadResponse>.
+     * @see PostRequest;
+     * @see UploadResponse;
+     */
+    public ResponseEntity<UploadResponse> editPost(Long id, PostRequest postRequest) throws Exception{
+        return savePost(id, postRequest);
+    }
+
+    /**
+     * Метод savePostVote - сохранение оценки поста (лайка или дизлайка).
+     * @param postId - id поста.
+     * @param value - значение оценки (1 - лайк, -1 - дизлайк).
+     * @return ResponseEntity<SimpleResponse>.
+     * @see SimpleResponse;
+     */
     public ResponseEntity<SimpleResponse> savePostVote(Long postId, int value) {
         User user = userService.getCurrentUser();
 
@@ -226,30 +297,67 @@ public class PostService {
         return ResponseEntity.ok(new SimpleResponse(result));
     }
 
+    /**
+     * Метод increaseOfViewsPost - увеличение просмотра поста.
+     * Увеличение количества просмотров производится в случае, если пост просмотрен только авторизованным
+     * пользователем, но если этот пользователь не является ни модератором и ни автором данного поста.
+     * @param post - пост который пытаются открыть.
+     * @see Post;
+     */
     @Transactional
-    private ResponseEntity<UploadResponse> savePost(Long id, PostRequest request) throws Exception {
+    private void increaseOfViewsPost(Post post) {
+        if(post == null) {
+            return;
+        }
+
+        try {
+            User reader = userService.getCurrentUser();
+
+            if(!post.getAuthor().equals(reader) && !reader.isModerator()) {
+                postRepository.incrementViewCountOfPost(post.getId());
+            }
+        } catch (AuthenticationException access) {
+            //не авторизованноу пользователю разрешено смотреть пост, но его просмотр не будет посчитан
+        } catch (Exception ex) {
+            log.info("При просмотре поста id={} получена ошибка {}", post.getId(), ex.getMessage());
+        }
+    }
+
+    /**
+     * Метод savePost - Сохранение постов.
+     * если включен этот режим, то все новые посты пользователей с moderation = false обязательно должны попадать
+     * на модерацию, у постов при создании должен быть установлен moderation_status = NEW. Eсли значения
+     * POST_PREMODERATION = false (режим премодерации выключен), то все новые посты должны сразу публиковаться
+     * (если у них установлен параметр active = 1), у постов при создании должен быть установлен
+     * moderation_status = ACCEPTED.
+     * @param id - идентификатор поста (если производится добавление нового, то -1 , иначе id из базы).
+     * @param postRequest - запрос за изменение поста.
+     * @return ResponseEntity<UploadResponse> - возврат true, если возможно открыть иначе false .
+     * @see UploadResponse;
+     * @see PostRequest;
+     */
+    @Transactional
+    private ResponseEntity<UploadResponse> savePost(Long id, PostRequest postRequest) throws Exception {
         UploadResponse response;
         Boolean postPremoderation = settingService.getBooleanSettingValueByCode("POST_PREMODERATION");
 
-        if(request.getTitle().length() > 3 && request.getText().length() > 50){
-            List<Tag> tags = tagService.saveTagByListName(Arrays.asList(request.getTags()));
-            LocalDateTime postDateTime = DateUtil.getLocalDateTimeFromTimestamp(request.getTimestamp());
+        if(postRequest.getTitle().length() > 3 && postRequest.getText().length() > 50) {
+            List<Tag> tags = tagService.saveTagByListName(Arrays.asList(postRequest.getTags()));
+            LocalDateTime postDateTime = DateUtil.getLocalDateTimeFromTimestamp(postRequest.getTimestamp());
 
             Post post = ( id > 0 ) ? postRepository.getOne(id)
                                    : new Post();
             User currentUser = userService.getCurrentUser();
-/*            User author = ( id > 0 ) ? post.getAuthor()
-                                     : currentUser;*/
 
             if(id == 0 ) {
                 post.setViewCount(0);
                 post.setAuthor(currentUser);
             }
 
-            post.setTitle(request.getTitle())
-                .setText(request.getText())
+            post.setTitle(postRequest.getTitle())
+                .setText(postRequest.getText())
                 .setTags(tags)
-                .setActive(request.isActive())
+                .setActive(postRequest.isActive())
                 .setDate(
                        postDateTime.isBefore(LocalDateTime.now())
                                 ? postDateTime
@@ -271,11 +379,11 @@ public class PostService {
                                      .build();
         } else {
             UploadTextError error = new UploadTextError();
-            if(request.getTitle().length() <= 3){
+            if(postRequest.getTitle().length() <= 3){
                 error.setTitle("Заголовок не установлен");
             }
 
-            if(request.getText().length() <= 50){
+            if(postRequest.getText().length() <= 50){
                 error.setText("Текст публикации слишком короткий");
             }
 
@@ -287,6 +395,13 @@ public class PostService {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    /**
+     * Метод preparePostsResponse - Подготовка сервисного ответа со сиском постов.
+     * @param pages - страница постов.
+     * @return ResponseEntity<PostListResponse> - список постов.
+     * @see Post;
+     * @see PostListResponse;
+     */
     private ResponseEntity<PostListResponse> preparePostsResponse(Page<Post> pages){
         try {
             Long totalPost = pages.getTotalElements();
@@ -308,14 +423,38 @@ public class PostService {
         }
     }
 
+    /**
+     * Метод getAllEarlyPost - Получить все посты отсортированные по дате
+     * (Пост созданный первым выводится первым).
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на отображаемых страницах.
+     * @return Page<Post> - отсортированная страница постов.
+     * @see Post;
+     */
     private Page<Post> getAllEarlyPost(int pageIndex, int pageSize){
-        return getAllPostOrderedByDate(pageIndex, pageSize, Sort.Direction.ASC);
+        return getAllOrderedPostByCurrentDate(pageIndex, pageSize, Sort.Direction.ASC);
     }
 
+    /**
+     * Метод getAllRecentPost - Получить все посты отсортированные по дате
+     * (Пост созданный последним выводится первым).
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на отображаемых страницах.
+     * @return Page<Post> - отсортированная страница постов.
+     * @see Post;
+     */
     private Page<Post> getAllRecentPost(int pageIndex, int pageSize){
-        return getAllPostOrderedByDate(pageIndex, pageSize, Sort.Direction.DESC);
+        return getAllOrderedPostByCurrentDate(pageIndex, pageSize, Sort.Direction.DESC);
     }
 
+    /**
+     * Метод getAllPopularPost - Получить все посты отсортированные по количеству комментариев
+     * (самые обсуждаемые будут первыми).
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на отображаемых страницах.
+     * @return Page<Post> - отсортированная страница постов.
+     * @see Post;
+     */
     private Page<Post> getAllPopularPost(int pageIndex, int pageSize){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
 
@@ -327,6 +466,13 @@ public class PostService {
         );
     }
 
+    /**
+     * Метод getAllBestPost - Получить все посты отсортированные по количеству лайков (лучшие будут первыми).
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - кколичество постов на отображаемых страницах.
+     * @return Page<Post> - отсортированную страницу постов .
+     * @see Post;
+     */
     private Page<Post> getAllBestPost(int pageIndex, int pageSize){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize);
         return postRepository.findAllWithCountOfVotesOrderByCountDesc(
@@ -337,7 +483,15 @@ public class PostService {
         );
     }
 
-    private Page<Post> getAllPostOrderedByDate(int pageIndex, int pageSize, Sort.Direction sort){
+    /**
+     * Метод getAllOrderedPostByCurrentDate - Получить все отсортированные посты за текущий день.
+     * @param pageIndex - номер открываемой страницы.
+     * @param pageSize - количество постов на отображаемых страницах.
+     * @param sort - параметр сортировки.
+     * @return Page<Post> - отсортированная страница постов.
+     * @see Post;
+     */
+    private Page<Post> getAllOrderedPostByCurrentDate(int pageIndex, int pageSize, Sort.Direction sort){
         Pageable pageable = PageRequest.of(pageIndex/pageSize, pageSize, sort, "date");
 
         return postRepository.findByModerationStatusValueAndIsActiveAndDateLessThanEqual(
@@ -347,8 +501,21 @@ public class PostService {
                 pageable);
     }
 
-    private boolean tryToSeePost(Post post) {
-        boolean isAuthUser = false;
+    /**
+     * Метод tryToOpenPost - Попытка открыть указанный пост.
+     * Открыть пост могут:
+     *  - автор поста(всегда)
+     *  - модератор в случае если пост активен (параметр is_active в базе данных равен 1)
+     *  - любой другой пользователей при условии, что пост:
+     *     - активен (параметр is_active в базе данных равен 1),
+     *     - принят модератором (параметр moderation_status равен ACCEPTED)
+     *     - и время его публикации (поле timestamp) равно текущему времени или меньше его формата UTC.
+     * @param post - пост который пытаются открыть.
+     * @return - возврат true, если возможно открыть иначе false .
+     * @see Post;
+     */
+    private boolean tryToOpenPost(Post post) {
+        /*boolean isAuthUser = false;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication instanceof UsernamePasswordAuthenticationToken) {
@@ -362,25 +529,31 @@ public class PostService {
                 //Модертор может просматривать только активные посты (не черновики)
                 return post.isActive();
             }
-        }
+        }*/
+        boolean result = false;
 
-        //если пользователь не привелигированный (Автор или Модератор),
-        // то смотреть может только посты:
-        // - у который дата публикации меньше текущей
-        // - активный пост (не черновик)
-        // - принятый можератором
-        if(post.getDate().isBefore(LocalDateTime.now())
-                && post.isActive()
-                && post.getModerationStatus() == ModerationStatus.ACCEPTED) {
+        try {
+            //Получаем текущего пользователя
+            User reader = userService.getCurrentUser();
 
-            if(isAuthUser) {
-                post.viewPost();
-                postRepository.save(post);
+            //Автор может просматривать пост всегда
+            if(reader.equals(post.getAuthor())) {
+                return true;
+            } else if(reader.isModerator()) {
+                //Модертор может просматривать только активные посты (не черновики)
+                return post.isActive();
             }
+        } catch (AuthenticationException access) {
+            //не авторизованноу пользователю разрешено открывать пост, но его просмотр не будет посчитан
+        } finally {
+            if(post.getDate().isBefore(LocalDateTime.now())
+                    && post.isActive()
+                    && post.getModerationStatus() == ModerationStatus.ACCEPTED) {
 
-            return true;
+                result = true;
+            }
         }
 
-        return false;
+        return result;
     }
 }
